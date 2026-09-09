@@ -13,8 +13,6 @@
     <include domain="database" path="islamic_database-journal" />
     <!-- DataStore preferences: theme, prayer prefs, tasbih, reciter, searches. -->
     <include domain="file" path="datastore/" />
-    <!-- Downloaded ayah audio (filesDir/audio/...) + azan clip: disposable,
-         re-downloaded on demand. Excluded explicitly for clarity. -->
-    <exclude domain="file" path="audio/" />
-    <exclude domain="file" path="azan.ogg" />
+    <!-- Downloaded ayah audio (filesDir/audio/...) + azan clip are disposable and
+         re-downloaded on demand, so they are intentionally not included. -->
 </full-backup-content>

@@ -14,10 +14,8 @@
         <include domain="database" path="islamic_database-journal" />
         <!-- DataStore preferences. -->
         <include domain="file" path="datastore/" />
-        <!-- Downloaded audio is disposable; excluded explicitly for clarity. -->
-        <exclude domain="file" path="audio/" />
-        <exclude domain="file" path="azan.ogg" />
-    </cloud-backup>
+        <!-- Downloaded audio is disposable; never enter the backup set. -->
+            </cloud-backup>
     <device-transfer>
         <!-- Same policy for direct device-to-device transfers. -->
         <include domain="database" path="islamic_database" />
@@ -25,7 +23,5 @@
         <include domain="database" path="islamic_database-shm" />
         <include domain="database" path="islamic_database-journal" />
         <include domain="file" path="datastore/" />
-        <exclude domain="file" path="audio/" />
-        <exclude domain="file" path="azan.ogg" />
-    </device-transfer>
+            </device-transfer>
 </data-extraction-rules>
