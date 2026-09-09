@@ -238,11 +238,16 @@ fun AppNavGraph() {
  */
 internal fun NavController.navigateToBottomDestination(route: String) {
     if (currentDestination?.route == route) return
+    // The start destination is never popped, so it never has saved state to
+    // restore — and restoring on its singleTop-reuse path breaks returning
+    // Home from screens with arguments (see BottomNavigationTest). Popped
+    // tabs are still saved so switching back restores their state.
+    val restore = route != graph.startDestinationRoute
     navigate(route) {
         popUpTo(graph.findStartDestination().id) {
             saveState = true
         }
         launchSingleTop = true
-        restoreState = true
+        restoreState = restore
     }
 }
