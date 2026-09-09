@@ -57,6 +57,11 @@ jobs:
           chmod +x gradlew
           ./gradlew --version
 
+      - name: Dependency insight (TEMPORARY)
+        run: |
+          ./gradlew :app:dependencyInsight --dependency kotlin-stdlib --configuration debugRuntimeClasspath 2>&1 | tee insight.txt || true
+          ./gradlew :app:dependencyInsight --dependency kotlinx-coroutines-core --configuration debugRuntimeClasspath 2>&1 | tee -a insight.txt || true
+
       - name: Lint
         run: |
           ./gradlew lintDebug --stacktrace 2>&1 | tee lint-output.txt
@@ -76,12 +81,16 @@ jobs:
         if: failure()
         run: |
           rm -f ci-diag.txt
-          for f in lint-output.txt test-output.txt build-output.txt; do
+          for f in insight.txt lint-output.txt test-output.txt build-output.txt; do
             if [ -f "$f" ]; then
               echo "===== $f =====" >> ci-diag.txt
               grep -aE "^e: |error:|FAILED|What went wrong|Execution failed|Caused by|KaptExecution|kapt.*[Ee]xception" "$f" | head -80 >> ci-diag.txt || true
-              echo "--- tail of $f ---" >> ci-diag.txt
-              tail -30 "$f" >> ci-diag.txt || true
+              if [ "$f" = "insight.txt" ]; then
+            cat "$f" >> ci-diag.txt || true
+          else
+            echo "--- tail of $f ---" >> ci-diag.txt
+            tail -30 "$f" >> ci-diag.txt || true
+          fi
             fi
           done
           for r in app/build/reports/lint-results-debug.xml; do
