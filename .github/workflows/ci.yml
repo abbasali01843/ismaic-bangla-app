@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: ["arena/01a0844c-ismaic-bangla-app"]
+    tags: ["v*"]
   pull_request:
 
 # Least privilege by default; jobs that publish request more below.
@@ -15,6 +16,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Check tag matches app version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          VER=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts)
+          echo "tag=$TAG versionName=$VER"
+          test "$TAG" = "$VER" || { echo "Tag v$TAG does not match versionName $VER"; exit 1; }
 
       - name: Set up JDK 17
         uses: actions/setup-java@v5
@@ -75,9 +84,11 @@ jobs:
           name: app-release-unsigned
           path: app/build/outputs/apk/release/app-release-unsigned.apk
 
+  # Versioned releases: pushing a tag vX.Y.Z publishes a NEW GitHub Release
+  # (old releases are never overwritten). See README "Releases".
   release:
     needs: validate
-    if: github.event_name == 'push'
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -88,13 +99,17 @@ jobs:
           name: app-debug
           path: apk/
 
-      - name: Publish to rolling release
+      - name: Rename APK with version
+        run: mv apk/app-debug.apk "apk/islamic-bangla-${GITHUB_REF_NAME}.apk"
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest-apk
-          name: "সর্বশেষ APK (Latest)"
-          body: "অটো-বিল্ড debug APK — ফোনে ডাউনলোড করে ইনস্টল করুন।"
-          files: apk/app-debug.apk
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: "ফোনে ইনস্টল: নিচের APK ডাউনলোড করে ইনস্টল করুন (Play Store লাগবে না)। আগের সব সংস্করণ Releases পেজে সংরক্ষিত থাকে।"
+          generate_release_notes: true
+          files: apk/islamic-bangla-*.apk
 
   # One-time bootstrap: the wrapper jar is a binary that cannot be written by
   # hand, so CI generates it from the committed properties and stores it back.

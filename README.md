@@ -82,7 +82,15 @@ cd ismaic-bangla-app
 
 ## Releases
 
-Each push to the working branch triggers GitHub Actions, which runs lint, unit tests and both debug + release builds, then publishes the debug APK to the rolling `latest-apk` GitHub Release. Download it from the repository's Releases page and install it directly on a phone (no Play Store account needed).
+Each push to the working branch triggers GitHub Actions, which runs lint, unit tests and both debug + release builds (APKs are kept as run artifacts for testing).
+
+Versioned releases are cut by pushing a tag — every release keeps its own APK and notes, old releases are never overwritten:
+
+1. Bump `versionCode`/`versionName` in `app/build.gradle.kts` and add a `CHANGELOG.md` entry.
+2. Commit, push, wait for CI green.
+3. `git tag vX.Y.Z && git push origin vX.Y.Z` — CI verifies the tag matches `versionName`, rebuilds, and publishes `islamic-bangla-vX.Y.Z.apk` as a new GitHub Release with auto-generated notes.
+
+Download any version from the repository's Releases page and install it directly on a phone (no Play Store account needed).
 
 Release builds are unsigned: signing is attached separately at packaging time, so no keystore or secrets live in this repository.
 
@@ -90,7 +98,7 @@ Release builds are unsigned: signing is attached separately at packaging time, s
 
 Automated workflow in `.github/workflows/`:
 
-- **ci.yml** — runs on every push/PR: lint → unit tests → debug/release builds → publishes the debug APK to the `latest-apk` release (pushes only).
+- **ci.yml** — runs on every push/PR: lint → unit tests → debug/release builds → publishes a versioned GitHub Release with its APK (tag pushes only; branch pushes keep APKs as run artifacts).
 
 ## Privacy & Security
 
