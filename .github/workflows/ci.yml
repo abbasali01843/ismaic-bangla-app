@@ -6,9 +6,8 @@ on:
   pull_request:
 
 # Least privilege by default; jobs that publish request more below.
-# TEMP-DIAG: contents:write so the diagnostics step can push ci-diag.txt back.
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   validate:
@@ -58,32 +57,8 @@ jobs:
       - name: Lint
         run: ./gradlew lintDebug --stacktrace
 
-      # TEMP-DIAG: tee output so failures can be pushed back as ci-diag.txt.
       - name: Unit tests
-        run: |
-          set -o pipefail
-          ./gradlew testDebugUnitTest --stacktrace 2>&1 | tee unit-tests.log
-
-      # TEMP-DIAG: runs even on failure; pushes ci-diag.txt back [skip ci].
-      - name: Collect diagnostics
-        if: always()
-        run: |
-          set +e
-          {
-            echo "=== TEST RESULTS DIR ==="
-            ls app/build/test-results/testDebugUnitTest/ 2>/dev/null || echo "(no test-results dir)"
-            echo "=== FAILED TESTCASES (from XML) ==="
-            grep -h -B1 -A8 "<failure\|<error" app/build/test-results/testDebugUnitTest/*.xml 2>/dev/null | head -120 || true
-            echo "=== TASKS THAT FAILED ==="
-            grep -E "FAILED|error:|e: " unit-tests.log 2>/dev/null | head -60 || true
-            echo "=== GRADLE TAIL (last 150 lines) ==="
-            tail -150 unit-tests.log 2>/dev/null || echo "(no unit-tests.log)"
-          } > ci-diag.txt 2>&1
-          git config user.name "arena-agent"
-          git config user.email "arena-agent@users.noreply.github.com"
-          git add -f ci-diag.txt
-          git commit -m "TEMP: unit test diagnostics [skip ci]" || true
-          git push origin HEAD:arena/01a0844c-ismaic-bangla-app || echo "push-back failed"
+        run: ./gradlew testDebugUnitTest --stacktrace
 
       - name: Build debug + release APKs
         run: ./gradlew assembleDebug assembleRelease --stacktrace

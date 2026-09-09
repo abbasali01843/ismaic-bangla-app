@@ -12,6 +12,7 @@ import com.islamic.bangla.data.repository.HadithLoadError
 import com.islamic.bangla.data.repository.HadithRepository
 import java.net.UnknownHostException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.resetMain
@@ -40,6 +41,7 @@ import retrofit2.Response
  * Real dispatchers are used (SettingsStore/DataStore does real disk I/O),
  * and each test waits for a terminal UI state instead of guessing timing.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class HadithViewModelTest {
