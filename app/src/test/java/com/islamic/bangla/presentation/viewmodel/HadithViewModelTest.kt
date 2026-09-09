@@ -127,7 +127,12 @@ class HadithViewModelTest {
             throw HttpException(Response.error<Any>(503, "down".toResponseBody()))
         }
 
-        val state = awaitSettled(viewModel())
+        // Warm cache: wait for the refresh failure itself, not for hadiths
+        // (cached rows are already visible before the refresh even starts).
+        val vm = viewModel()
+        val state = withTimeout(20_000) {
+            vm.uiState.first { it.syncError != null }
+        }
 
         // Cache fallback: cached hadith stays visible…
         assertEquals(1, state.hadiths.size)

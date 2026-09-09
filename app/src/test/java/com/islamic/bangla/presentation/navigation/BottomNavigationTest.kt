@@ -52,8 +52,9 @@ class BottomNavigationTest {
         }
     }
 
-    private fun routes(): List<String?> =
-        navController.currentBackStack.value.map { it.destination.route }
+    /** Routes of real destinations (skips the route-less root graph entry). */
+    private fun routes(): List<String> =
+        navController.currentBackStack.value.mapNotNull { it.destination.route }
 
     @Test
     fun homeTapFromAnotherTab_returnsHome() {
