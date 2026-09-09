@@ -1,25 +1,169 @@
 === TEST RESULTS DIR ===
-(no test-results dir)
+TEST-com.islamic.bangla.data.local.database.Migration5To6Test.xml
+TEST-com.islamic.bangla.data.local.seed.DuaCategoriesTest.xml
+TEST-com.islamic.bangla.data.remote.dto.HadithDtoTest.xml
+TEST-com.islamic.bangla.data.repository.HadithRepositoryTest.xml
+TEST-com.islamic.bangla.presentation.navigation.BottomNavigationTest.xml
+TEST-com.islamic.bangla.presentation.viewmodel.HadithViewModelTest.xml
+TEST-com.islamic.bangla.presentation.viewmodel.QiblaBearingTest.xml
+binary
 === FAILED TESTCASES (from XML) ===
+  <testcase name="tabSwitching_keepsSingleTabAboveHome" classname="com.islamic.bangla.presentation.navigation.BottomNavigationTest" time="0.114">
+    <failure message="java.lang.AssertionError: expected:&lt;[home, hadith]&gt; but was:&lt;[null, home, hadith]&gt;" type="java.lang.AssertionError">java.lang.AssertionError: expected:&lt;[home, hadith]&gt; but was:&lt;[null, home, hadith]&gt;
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.islamic.bangla.presentation.navigation.BottomNavigationTest.tabSwitching_keepsSingleTabAboveHome(BottomNavigationTest.kt:84)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+--
+  <testcase name="homeTapFromSecondaryScreen_popsEverythingAboveHome" classname="com.islamic.bangla.presentation.navigation.BottomNavigationTest" time="0.022">
+    <failure message="java.lang.AssertionError: expected:&lt;[home, surah/{surahNumber}]&gt; but was:&lt;[null, home, surah/{surahNumber}]&gt;" type="java.lang.AssertionError">java.lang.AssertionError: expected:&lt;[home, surah/{surahNumber}]&gt; but was:&lt;[null, home, surah/{surahNumber}]&gt;
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.islamic.bangla.presentation.navigation.BottomNavigationTest.homeTapFromSecondaryScreen_popsEverythingAboveHome(BottomNavigationTest.kt:109)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+--
+  <testcase name="retappingSelectedTab_pushesNothing" classname="com.islamic.bangla.presentation.navigation.BottomNavigationTest" time="0.021">
+    <failure message="java.lang.AssertionError: expected:&lt;[home, quran]&gt; but was:&lt;[null, home, quran]&gt;" type="java.lang.AssertionError">java.lang.AssertionError: expected:&lt;[home, quran]&gt; but was:&lt;[null, home, quran]&gt;
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.islamic.bangla.presentation.navigation.BottomNavigationTest.retappingSelectedTab_pushesNothing(BottomNavigationTest.kt:93)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+--
+  <testcase name="homeTapFromAnotherTab_returnsHome" classname="com.islamic.bangla.presentation.navigation.BottomNavigationTest" time="0.048">
+    <failure message="java.lang.AssertionError: expected:&lt;[home]&gt; but was:&lt;[null, home]&gt;" type="java.lang.AssertionError">java.lang.AssertionError: expected:&lt;[home]&gt; but was:&lt;[null, home]&gt;
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.islamic.bangla.presentation.navigation.BottomNavigationTest.homeTapFromAnotherTab_returnsHome(BottomNavigationTest.kt:66)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+--
+  <testcase name="backFromTab_returnsHome" classname="com.islamic.bangla.presentation.navigation.BottomNavigationTest" time="0.02">
+    <failure message="java.lang.AssertionError: expected:&lt;[home]&gt; but was:&lt;[null, home]&gt;" type="java.lang.AssertionError">java.lang.AssertionError: expected:&lt;[home]&gt; but was:&lt;[null, home]&gt;
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.islamic.bangla.presentation.navigation.BottomNavigationTest.backFromTab_returnsHome(BottomNavigationTest.kt:146)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+--
+  <testcase name="tabTapFromSecondaryScreen_resetsToThatTab" classname="com.islamic.bangla.presentation.navigation.BottomNavigationTest" time="0.024">
+    <failure message="java.lang.AssertionError: expected:&lt;[home, hadith]&gt; but was:&lt;[null, home, hadith]&gt;" type="java.lang.AssertionError">java.lang.AssertionError: expected:&lt;[home, hadith]&gt; but was:&lt;[null, home, hadith]&gt;
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.islamic.bangla.presentation.navigation.BottomNavigationTest.tabTapFromSecondaryScreen_resetsToThatTab(BottomNavigationTest.kt:125)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+--
+  <testcase name="retappingHome_pushesNothing" classname="com.islamic.bangla.presentation.navigation.BottomNavigationTest" time="0.021">
+    <failure message="java.lang.AssertionError: expected:&lt;[home]&gt; but was:&lt;[null, home]&gt;" type="java.lang.AssertionError">java.lang.AssertionError: expected:&lt;[home]&gt; but was:&lt;[null, home]&gt;
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.islamic.bangla.presentation.navigation.BottomNavigationTest.retappingHome_pushesNothing(BottomNavigationTest.kt:101)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+--
+  <testcase name="everyBottomTab_isReachableWithoutDuplicates" classname="com.islamic.bangla.presentation.navigation.BottomNavigationTest" time="0.023">
+    <failure message="java.lang.AssertionError: expected:&lt;[home]&gt; but was:&lt;[null, home]&gt;" type="java.lang.AssertionError">java.lang.AssertionError: expected:&lt;[home]&gt; but was:&lt;[null, home]&gt;
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.islamic.bangla.presentation.navigation.BottomNavigationTest.everyBottomTab_isReachableWithoutDuplicates(BottomNavigationTest.kt:75)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+--
+  <testcase name="backFromSecondaryScreen_returnsToPreviousTab" classname="com.islamic.bangla.presentation.navigation.BottomNavigationTest" time="0.024">
+    <failure message="java.lang.AssertionError: expected:&lt;[home, quran]&gt; but was:&lt;[null, home, quran]&gt;" type="java.lang.AssertionError">java.lang.AssertionError: expected:&lt;[home, quran]&gt; but was:&lt;[null, home, quran]&gt;
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:120)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at com.islamic.bangla.presentation.navigation.BottomNavigationTest.backFromSecondaryScreen_returnsToPreviousTab(BottomNavigationTest.kt:136)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+--
+  <testcase name="serverErrorWithCache_keepsCacheAndStaysOnline" classname="com.islamic.bangla.presentation.viewmodel.HadithViewModelTest" time="0.019">
+    <failure message="java.lang.AssertionError" type="java.lang.AssertionError">java.lang.AssertionError
+	at org.junit.Assert.fail(Assert.java:87)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertTrue(Assert.java:53)
+	at com.islamic.bangla.presentation.viewmodel.HadithViewModelTest$serverErrorWithCache_keepsCacheAndStaysOnline$1.invokeSuspend(HadithViewModelTest.kt:137)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:95)
 === TASKS THAT FAILED ===
-> Task :app:compileDebugUnitTestKotlin FAILED
-e: file:///home/runner/work/ismaic-bangla-app/ismaic-bangla-app/app/src/test/java/com/islamic/bangla/presentation/navigation/BottomNavigationTest.kt:5:36 Unresolved reference 'TestNavigator'.
-e: file:///home/runner/work/ismaic-bangla-app/ismaic-bangla-app/app/src/test/java/com/islamic/bangla/presentation/navigation/BottomNavigationTest.kt:6:36 Unresolved reference 'test'.
-e: file:///home/runner/work/ismaic-bangla-app/ismaic-bangla-app/app/src/test/java/com/islamic/bangla/presentation/navigation/BottomNavigationTest.kt:33:45 None of the following candidates is applicable:
-fun <T : Navigator<*>> getNavigator(name: String): T
-e: file:///home/runner/work/ismaic-bangla-app/ismaic-bangla-app/app/src/test/java/com/islamic/bangla/presentation/navigation/BottomNavigationTest.kt:33:58 Unresolved reference 'TestNavigator'.
-e: file:///home/runner/work/ismaic-bangla-app/ismaic-bangla-app/app/src/test/java/com/islamic/bangla/presentation/navigation/BottomNavigationTest.kt:35:58 Unresolved reference 'TestNavigator'.
-e: file:///home/runner/work/ismaic-bangla-app/ismaic-bangla-app/app/src/test/java/com/islamic/bangla/presentation/navigation/BottomNavigationTest.kt:38:13 Unresolved reference 'test'.
-e: file:///home/runner/work/ismaic-bangla-app/ismaic-bangla-app/app/src/test/java/com/islamic/bangla/presentation/navigation/BottomNavigationTest.kt:39:13 Unresolved reference 'test'.
-e: file:///home/runner/work/ismaic-bangla-app/ismaic-bangla-app/app/src/test/java/com/islamic/bangla/presentation/navigation/BottomNavigationTest.kt:40:13 Unresolved reference 'test'.
-e: file:///home/runner/work/ismaic-bangla-app/ismaic-bangla-app/app/src/test/java/com/islamic/bangla/presentation/navigation/BottomNavigationTest.kt:41:13 Unresolved reference 'test'.
-e: file:///home/runner/work/ismaic-bangla-app/ismaic-bangla-app/app/src/test/java/com/islamic/bangla/presentation/navigation/BottomNavigationTest.kt:42:13 Unresolved reference 'test'.
-e: file:///home/runner/work/ismaic-bangla-app/ismaic-bangla-app/app/src/test/java/com/islamic/bangla/presentation/navigation/BottomNavigationTest.kt:43:13 Unresolved reference 'test'.
-e: file:///home/runner/work/ismaic-bangla-app/ismaic-bangla-app/app/src/test/java/com/islamic/bangla/presentation/navigation/BottomNavigationTest.kt:44:13 Unresolved reference 'test'.
-BUILD FAILED in 6s
+BottomNavigationTest > tabSwitching_keepsSingleTabAboveHome FAILED
+BottomNavigationTest > homeTapFromSecondaryScreen_popsEverythingAboveHome FAILED
+BottomNavigationTest > retappingSelectedTab_pushesNothing FAILED
+BottomNavigationTest > homeTapFromAnotherTab_returnsHome FAILED
+BottomNavigationTest > backFromTab_returnsHome FAILED
+BottomNavigationTest > tabTapFromSecondaryScreen_resetsToThatTab FAILED
+BottomNavigationTest > retappingHome_pushesNothing FAILED
+BottomNavigationTest > everyBottomTab_isReachableWithoutDuplicates FAILED
+BottomNavigationTest > backFromSecondaryScreen_returnsToPreviousTab FAILED
+HadithViewModelTest > serverErrorWithCache_keepsCacheAndStaysOnline FAILED
+> Task :app:testDebugUnitTest FAILED
+BUILD FAILED in 14s
 === GRADLE TAIL (last 150 lines) ===
-	at org.gradle.internal.work.DefaultAsyncWorkTracker.waitForCompletion(DefaultAsyncWorkTracker.java:66)
-	at org.gradle.api.internal.tasks.execution.TaskExecution$3.run(TaskExecution.java:252)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
+	at org.gradle.execution.plan.LocalTaskNodeExecutor.execute(LocalTaskNodeExecutor.java:42)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:331)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:318)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:314)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:314)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:303)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:459)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:376)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+Caused by: org.gradle.api.internal.exceptions.MarkedVerificationException: There were failing tests. See the report at: file:///home/runner/work/ismaic-bangla-app/ismaic-bangla-app/app/build/reports/tests/testDebugUnitTest/index.html
+	at org.gradle.api.tasks.testing.AbstractTestTask.handleTestFailures(AbstractTestTask.java:714)
+	at org.gradle.api.tasks.testing.AbstractTestTask.handleCollectedResults(AbstractTestTask.java:545)
+	at org.gradle.api.tasks.testing.AbstractTestTask.executeTests(AbstractTestTask.java:540)
+	at org.gradle.api.tasks.testing.Test.executeTests(Test.java:719)
+	at com.android.build.gradle.tasks.factory.AndroidUnitTest.executeTests(AndroidUnitTest.java:172)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at org.gradle.internal.reflect.JavaMethod.invoke(JavaMethod.java:125)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.doExecute(StandardTaskAction.java:58)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:51)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:29)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$3.run(TaskExecution.java:244)
 	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:30)
 	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:27)
 	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
@@ -133,38 +277,7 @@ BUILD FAILED in 6s
 	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:376)
 	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
 	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
-Caused by: org.jetbrains.kotlin.gradle.tasks.CompilationErrorException: Compilation error. See log for more details
-	at org.jetbrains.kotlin.gradle.tasks.TasksUtilsKt.throwExceptionIfCompilationFailed(tasksUtils.kt:21)
-	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.run(GradleKotlinCompilerWork.kt:119)
-	at org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction.execute(GradleCompilerRunnerWithWorkers.kt:76)
-	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:63)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:66)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:62)
-	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:100)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:62)
-	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
-	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:210)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:205)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:67)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:60)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:167)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:60)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:54)
-	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
-	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:59)
-	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:174)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
-	at org.gradle.internal.Factories$1.create(Factories.java:31)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:263)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:127)
-	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:132)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
-	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
-	... 2 more
 
 
-BUILD FAILED in 6s
-30 actionable tasks: 7 executed, 23 up-to-date
+BUILD FAILED in 14s
+34 actionable tasks: 11 executed, 23 up-to-date
