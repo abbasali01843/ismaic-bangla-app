@@ -11,10 +11,7 @@ permissions:
 
 jobs:
   validate:
-    if: github.event_name != 'push' || !contains(github.event.head_commit.message, 'TEMP ci diagnosis')
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # TEMPORARY for failure diagnosis; reverted before milestone end
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -57,55 +54,14 @@ jobs:
           chmod +x gradlew
           ./gradlew --version
 
-      - name: Dependency insight (TEMPORARY)
-        run: |
-          ./gradlew :app:dependencyInsight --dependency kotlin-stdlib --configuration debugRuntimeClasspath 2>&1 | tee insight.txt || true
-          ./gradlew :app:dependencyInsight --dependency kotlinx-coroutines-core --configuration debugRuntimeClasspath 2>&1 | tee -a insight.txt || true
-
       - name: Lint
-        run: |
-          ./gradlew lintDebug --stacktrace 2>&1 | tee lint-output.txt
-          exit ${PIPESTATUS[0]}
+        run: ./gradlew lintDebug --stacktrace
 
       - name: Unit tests
-        run: |
-          ./gradlew testDebugUnitTest --stacktrace 2>&1 | tee test-output.txt
-          exit ${PIPESTATUS[0]}
+        run: ./gradlew testDebugUnitTest --stacktrace
 
       - name: Build debug + release APKs
-        run: |
-          ./gradlew assembleDebug assembleRelease --stacktrace 2>&1 | tee build-output.txt
-          exit ${PIPESTATUS[0]}
-
-      - name: Capture diagnosis on failure (TEMPORARY)
-        if: failure()
-        run: |
-          rm -f ci-diag.txt
-          for f in insight.txt lint-output.txt test-output.txt build-output.txt; do
-            if [ -f "$f" ]; then
-              echo "===== $f =====" >> ci-diag.txt
-              grep -aiE "^e: |error:|FAILED|What went wrong|Execution failed|Caused by|KaptExecution|kapt.*exception" "$f" | head -80 >> ci-diag.txt || true
-              if [ "$f" = "insight.txt" ]; then
-            cat "$f" >> ci-diag.txt || true
-          else
-            echo "--- tail of $f ---" >> ci-diag.txt
-            tail -30 "$f" >> ci-diag.txt || true
-          fi
-            fi
-          done
-          echo "===== lint reports dir =====" >> ci-diag.txt
-          ls app/build/reports/ >> ci-diag.txt 2>&1 || true
-          for r in app/build/reports/lint-results-debug.txt; do
-            if [ -f "$r" ]; then
-              echo "===== $r (errors only) =====" >> ci-diag.txt
-              grep -a -B2 -A6 "Error:" "$r" | head -120 >> ci-diag.txt || true
-            fi
-          done
-          git config user.name "arena-agent"
-          git config user.email "arena-agent@users.noreply.github.com"
-          git add -f ci-diag.txt
-          git commit -m "TEMP ci diagnosis" || true
-          git push origin HEAD:arena/01a0844c-ismaic-bangla-app || true
+        run: ./gradlew assembleDebug assembleRelease --stacktrace
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

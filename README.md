@@ -48,7 +48,7 @@ ismaic-bangla-app/
 │   ├── src/main/assets/        # Bundled seed data (surahs, duas, dhikrs, names)
 │   ├── src/main/res/           # Resources (theme, icons, backup rules)
 │   ├── src/test/               # JVM unit tests (incl. Room migration test)
-│   └── schemas/                # Exported Room schema (migration review)
+│   └── schemas/                # Exported Room schema at build time (git-ignored)
 ├── gradle/wrapper/             # Gradle Wrapper (Gradle 8.13)
 ├── .github/workflows/          # CI automation (ci.yml)
 └── README.md

@@ -32,3 +32,6 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Room schema export (regenerated on every build)
+app/schemas/
