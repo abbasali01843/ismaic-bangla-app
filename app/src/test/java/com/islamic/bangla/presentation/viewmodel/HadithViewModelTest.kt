@@ -1,8 +1,6 @@
 package com.islamic.bangla.presentation.viewmodel
 
-import androidx.test.core.app.ApplicationProvider
 import com.google.gson.JsonPrimitive
-import com.islamic.bangla.MainDispatcherRule
 import com.islamic.bangla.data.FakeHadithApi
 import com.islamic.bangla.data.FakeHadithDao
 import com.islamic.bangla.data.model.Hadith
@@ -13,19 +11,23 @@ import com.islamic.bangla.data.remote.dto.HadithMetadataDto
 import com.islamic.bangla.data.repository.HadithLoadError
 import com.islamic.bangla.data.repository.HadithRepository
 import java.net.UnknownHostException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withTimeout
 import okhttp3.ResponseBody.Companion.toResponseBody
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import retrofit2.HttpException
 import retrofit2.Response
@@ -34,14 +36,13 @@ import retrofit2.Response
  * Drives the real [HadithViewModel] + [HadithRepository] + [SettingsStore]
  * with a fake API/DAO: verifies the cache-fallback contract and that only a
  * genuine connectivity failure sets [HadithUiState.offline].
+ *
+ * Real dispatchers are used (SettingsStore/DataStore does real disk I/O),
+ * and each test waits for a terminal UI state instead of guessing timing.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class HadithViewModelTest {
-
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var dao: FakeHadithDao
     private lateinit var api: FakeHadithApi
@@ -50,6 +51,16 @@ class HadithViewModelTest {
     fun setup() {
         dao = FakeHadithDao()
         api = FakeHadithApi()
+        Dispatchers.setMain(Dispatchers.Unconfined)
+        // Fresh DataStore per test: last-sync timestamps must not leak.
+        RuntimeEnvironment.getApplication().filesDir
+            .resolve("datastore/settings.preferences_pb")
+            .delete()
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
     private fun viewModel(): HadithViewModel = HadithViewModel(
@@ -62,14 +73,21 @@ class HadithViewModelTest {
         hadiths = listOf(HadithDto(hadithnumber = JsonPrimitive(1), text = text))
     )
 
+    /** Waits until a refresh (or cache load) has fully settled. */
+    private suspend fun awaitSettled(vm: HadithViewModel): HadithUiState =
+        withTimeout(20_000) {
+            vm.uiState.first {
+                !it.isSyncing &&
+                    (it.hadiths.isNotEmpty() || it.syncError != null || it.arabicMissing)
+            }
+        }
+
     @Test
-    fun success_showsHadithsWithoutErrorFlags() = runTest {
+    fun success_showsHadithsWithoutErrorFlags(): Unit = runBlocking {
         api.handler = { edition(text = if (it.startsWith("ben-")) "বাংলা" else "عربي") }
 
-        val vm = viewModel()
-        advanceUntilIdle()
+        val state = awaitSettled(viewModel())
 
-        val state = vm.uiState.value
         assertEquals(1, state.hadiths.size)
         assertEquals("বাংলা", state.hadiths[0].banglaTranslation)
         assertEquals("عربي", state.hadiths[0].arabicText)
@@ -80,13 +98,11 @@ class HadithViewModelTest {
     }
 
     @Test
-    fun offlineWithEmptyCache_reportsNoInternet() = runTest {
+    fun offlineWithEmptyCache_reportsNoInternet(): Unit = runBlocking {
         api.handler = { throw UnknownHostException("no network") }
 
-        val vm = viewModel()
-        advanceUntilIdle()
+        val state = awaitSettled(viewModel())
 
-        val state = vm.uiState.value
         assertTrue(state.hadiths.isEmpty())
         assertTrue(state.offline)
         assertTrue(state.syncError is HadithLoadError.NoInternet)
@@ -94,7 +110,7 @@ class HadithViewModelTest {
     }
 
     @Test
-    fun serverErrorWithCache_keepsCacheAndStaysOnline() = runTest {
+    fun serverErrorWithCache_keepsCacheAndStaysOnline(): Unit = runBlocking {
         dao.insertHadith(
             Hadith(
                 hadithId = 1,
@@ -111,10 +127,8 @@ class HadithViewModelTest {
             throw HttpException(Response.error<Any>(503, "down".toResponseBody()))
         }
 
-        val vm = viewModel()
-        advanceUntilIdle()
+        val state = awaitSettled(viewModel())
 
-        val state = vm.uiState.value
         // Cache fallback: cached hadith stays visible…
         assertEquals(1, state.hadiths.size)
         // …and a server error must NOT be reported as "no internet".
@@ -125,15 +139,13 @@ class HadithViewModelTest {
     }
 
     @Test
-    fun arabicFailure_showsBanglaWithArabicMissingFlag() = runTest {
+    fun arabicFailure_showsBanglaWithArabicMissingFlag(): Unit = runBlocking {
         api.handler = { editionName ->
             if (editionName.startsWith("ben-")) edition("বাংলা") else throw UnknownHostException()
         }
 
-        val vm = viewModel()
-        advanceUntilIdle()
+        val state = awaitSettled(viewModel())
 
-        val state = vm.uiState.value
         assertEquals(1, state.hadiths.size)
         assertTrue(state.arabicMissing)
         assertFalse(state.offline)
@@ -141,7 +153,7 @@ class HadithViewModelTest {
     }
 
     @Test
-    fun retryAfterFailure_recovers() = runTest {
+    fun retryAfterFailure_recovers(): Unit = runBlocking {
         var attempts = 0
         api.handler = {
             attempts++
@@ -149,13 +161,11 @@ class HadithViewModelTest {
         }
 
         val vm = viewModel()
-        advanceUntilIdle()
-        assertTrue(vm.uiState.value.offline)
+        assertTrue(awaitSettled(vm).offline)
 
         vm.selectCollection("bukhari")
-        advanceUntilIdle()
+        val state = awaitSettled(vm)
 
-        val state = vm.uiState.value
         assertFalse(state.offline)
         assertNull(state.syncError)
         assertEquals(1, state.hadiths.size)

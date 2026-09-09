@@ -2,6 +2,7 @@ package com.islamic.bangla.presentation.navigation
 
 import androidx.navigation.createGraph
 import androidx.navigation.testing.TestNavHostController
+import androidx.navigation.testing.TestNavigator
 import androidx.navigation.testing.test
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -27,6 +28,12 @@ class BottomNavigationTest {
     @Before
     fun setup() {
         navController = TestNavHostController(RuntimeEnvironment.getApplication())
+        // TestNavHostController normally registers this itself; tolerate both.
+        try {
+            navController.navigatorProvider.getNavigator<TestNavigator>("test")
+        } catch (e: IllegalStateException) {
+            navController.navigatorProvider.addNavigator(TestNavigator())
+        }
         navController.graph = navController.createGraph(startDestination = "home") {
             test("home")
             test("quran")
