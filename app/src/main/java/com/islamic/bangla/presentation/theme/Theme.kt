@@ -5,33 +5,90 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.ui.graphics.Color
 
 private val LightColors = lightColorScheme(
-    primary = GreenPrimary,
-    onPrimary = GreenOnPrimary,
-    primaryContainer = GreenPrimaryContainer,
-    onPrimaryContainer = GreenOnPrimaryContainer,
-    secondary = GoldSecondary,
-    secondaryContainer = GoldSecondaryContainer,
-    onSecondaryContainer = GoldOnSecondaryContainer,
+    primary = LightPrimary,
+    onPrimary = LightOnPrimary,
+    primaryContainer = LightPrimaryContainer,
+    onPrimaryContainer = LightOnPrimaryContainer,
+    secondary = LightSecondary,
+    onSecondary = LightOnSecondary,
+    secondaryContainer = LightSecondaryContainer,
+    onSecondaryContainer = LightOnSecondaryContainer,
+    tertiary = LightTertiary,
+    onTertiary = LightOnTertiary,
+    tertiaryContainer = LightTertiaryContainer,
+    onTertiaryContainer = LightOnTertiaryContainer,
+    error = LightError,
+    onError = LightOnError,
+    errorContainer = LightErrorContainer,
+    onErrorContainer = LightOnErrorContainer,
     background = LightBackground,
+    onBackground = LightOnBackground,
     surface = LightSurface,
-    surfaceVariant = LightSurfaceVariant
+    onSurface = LightOnSurface,
+    surfaceVariant = LightSurfaceVariant,
+    onSurfaceVariant = LightOnSurfaceVariant,
+    surfaceTint = LightPrimary,
+    inverseSurface = LightInverseSurface,
+    inverseOnSurface = LightInverseOnSurface,
+    inversePrimary = LightInversePrimary,
+    surfaceContainerLowest = LightSurfaceLowest,
+    surfaceContainerLow = LightSurfaceLow,
+    surfaceContainer = LightSurfaceContainer,
+    surfaceContainerHigh = LightSurfaceHigh,
+    surfaceContainerHighest = LightSurfaceHighest,
+    outline = LightOutline,
+    outlineVariant = LightOutlineVariant,
+    scrim = Color.Black
 )
 
 private val DarkColors = darkColorScheme(
-    primary = GreenPrimaryDark,
-    onPrimary = GreenOnPrimaryDark,
-    primaryContainer = GreenPrimaryContainerDark,
-    onPrimaryContainer = GreenOnPrimaryContainerDark,
-    secondary = GoldSecondaryDark,
-    secondaryContainer = GoldSecondaryContainerDark,
-    onSecondaryContainer = GoldOnSecondaryContainerDark,
+    primary = DarkPrimary,
+    onPrimary = DarkOnPrimary,
+    primaryContainer = DarkPrimaryContainer,
+    onPrimaryContainer = DarkOnPrimaryContainer,
+    secondary = DarkSecondary,
+    onSecondary = DarkOnSecondary,
+    secondaryContainer = DarkSecondaryContainer,
+    onSecondaryContainer = DarkOnSecondaryContainer,
+    tertiary = DarkTertiary,
+    onTertiary = DarkOnTertiary,
+    tertiaryContainer = DarkTertiaryContainer,
+    onTertiaryContainer = DarkOnTertiaryContainer,
+    error = DarkError,
+    onError = DarkOnError,
+    errorContainer = DarkErrorContainer,
+    onErrorContainer = DarkOnErrorContainer,
     background = DarkBackground,
+    onBackground = DarkOnBackground,
     surface = DarkSurface,
-    surfaceVariant = DarkSurfaceVariant
+    onSurface = DarkOnSurface,
+    surfaceVariant = DarkSurfaceVariant,
+    onSurfaceVariant = DarkOnSurfaceVariant,
+    surfaceTint = DarkPrimary,
+    inverseSurface = DarkInverseSurface,
+    inverseOnSurface = DarkInverseOnSurface,
+    inversePrimary = DarkInversePrimary,
+    surfaceContainerLowest = DarkSurfaceLowest,
+    surfaceContainerLow = DarkSurfaceLow,
+    surfaceContainer = DarkSurfaceContainer,
+    surfaceContainerHigh = DarkSurfaceHigh,
+    surfaceContainerHighest = DarkSurfaceHighest,
+    outline = DarkOutline,
+    outlineVariant = DarkOutlineVariant,
+    scrim = Color.Black
 )
 
+/**
+ * App theme: full Material 3 color schemes (genuinely designed light + dark),
+ * centralized [AppTypography] (Bangla/Arabic-tuned), [AppShapes], and static
+ * tokens ([AppSpacing], [AppDimens], [AppElevation], [AppMotion]).
+ *
+ * Signature is stable: MainActivity drives [darkTheme] from Settings.
+ */
 @Composable
 fun IslamicBanglaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -40,6 +97,13 @@ fun IslamicBanglaTheme(
     MaterialTheme(
         colorScheme = if (darkTheme) DarkColors else LightColors,
         typography = AppTypography,
+        shapes = AppShapes,
         content = content
     )
 }
+
+/** True when the current theme is the dark scheme (for custom drawing code). */
+val isAppInDarkTheme: Boolean
+    @Composable
+    @ReadOnlyComposable
+    get() = MaterialTheme.colorScheme.background == DarkBackground
