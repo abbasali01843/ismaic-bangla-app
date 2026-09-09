@@ -31,7 +31,7 @@ class BottomNavigationTest {
         // TestNavHostController normally registers this itself; tolerate both.
         try {
             navController.navigatorProvider.getNavigator<TestNavigator>("test")
-        } catch (e: IllegalStateException) {
+        } catch (e: Exception) {
             navController.navigatorProvider.addNavigator(TestNavigator())
         }
         navController.graph = navController.createGraph(startDestination = "home") {

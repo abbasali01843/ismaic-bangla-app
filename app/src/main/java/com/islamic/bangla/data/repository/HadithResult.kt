@@ -62,15 +62,16 @@ fun Throwable.toHadithLoadError(): HadithLoadError {
     var httpCode: Int? = null
     var sawDataError = false
     while (cause != null) {
-        when (cause) {
+        val current: Throwable = cause ?: break
+        when (current) {
             is UnknownHostException,
             is ConnectException,
             is SocketTimeoutException,
             is NoRouteToHostException -> return HadithLoadError.NoInternet
-            is HttpException -> if (httpCode == null) httpCode = cause.code()
+            is HttpException -> if (httpCode == null) httpCode = current.code()
             is JsonParseException -> sawDataError = true
         }
-        cause = cause.cause
+        cause = current.cause
     }
     if (httpCode != null) return HadithLoadError.ServerError(httpCode)
     if (sawDataError) return HadithLoadError.DataFormatError
