@@ -48,6 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.islamic.bangla.data.model.Hadith
 import com.islamic.bangla.data.remote.HadithCollections
+import com.islamic.bangla.data.repository.HadithLoadError
 import com.islamic.bangla.presentation.components.EmptyState
 import com.islamic.bangla.presentation.components.NoteEditorDialog
 import com.islamic.bangla.presentation.components.NoteTarget
@@ -120,8 +121,12 @@ fun HadithListScreen(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                 )
             }
-            if (uiState.offline && uiState.hadiths.isNotEmpty()) {
-                OfflineBanner()
+            val syncError = uiState.syncError
+            if (syncError != null && uiState.hadiths.isNotEmpty()) {
+                OfflineBanner(message = syncError.bannerMessage())
+            }
+            if (uiState.arabicMissing && uiState.hadiths.isNotEmpty()) {
+                OfflineBanner(message = "আরবি পাঠ লোড হয়নি — শুধু বাংলা দেখছেন")
             }
             when {
                 uiState.isLoading -> {
@@ -134,13 +139,15 @@ fun HadithListScreen(
                 }
                 visibleHadiths.isEmpty() && !uiState.isSyncing -> {
                     EmptyState(
-                        title = if (uiState.offline) "ইন্টারনেট সংযোগ নেই" else "কোনো হাদিস পাওয়া যায়নি",
-                        message = if (uiState.offline) {
-                            "সংযোগ ফিরে এলে আবার চেষ্টা করুন"
-                        } else if (query.isNotBlank()) {
-                            "অন্য শব্দে খুঁজে দেখুন"
-                        } else {
-                            "পুনরায় চেষ্টা করুন"
+                        title = when {
+                            query.isNotBlank() -> "কোনো হাদিস পাওয়া যায়নি"
+                            syncError != null -> syncError.title()
+                            else -> "কোনো হাদিস পাওয়া যায়নি"
+                        },
+                        message = when {
+                            query.isNotBlank() -> "অন্য শব্দে খুঁজে দেখুন"
+                            syncError != null -> syncError.message()
+                            else -> "পুনরায় চেষ্টা করুন"
                         },
                         actionLabel = "আবার চেষ্টা করুন",
                         onAction = {
@@ -299,4 +306,33 @@ private fun HadithCard(
             )
         }
     }
+}
+
+/** Empty-state title for each refresh failure — never blames the internet. */
+private fun HadithLoadError.title(): String = when (this) {
+    HadithLoadError.NoInternet -> "ইন্টারনেট সংযোগ নেই"
+    is HadithLoadError.ServerError -> "সার্ভার থেকে তথ্য পাওয়া যায়নি"
+    HadithLoadError.DataFormatError -> "তথ্য পড়তে সমস্যা হয়েছে"
+    HadithLoadError.UnknownCollection -> "অজানা সংগ্রহ"
+    HadithLoadError.EmptyCollection -> "সংগ্রহে কোনো হাদিস নেই"
+    is HadithLoadError.Unexpected -> "কিছু ভুল হয়েছে"
+}
+
+private fun HadithLoadError.message(): String = when (this) {
+    HadithLoadError.NoInternet -> "সংযোগ ফিরে এলে আবার চেষ্টা করুন"
+    is HadithLoadError.ServerError -> "সার্ভার ত্রুটি (কোড $httpCode) — পরে আবার চেষ্টা করুন"
+    HadithLoadError.DataFormatError -> "সার্ভারের তথ্য বোঝা যায়নি — পরে আবার চেষ্টা করুন"
+    HadithLoadError.UnknownCollection -> "এই হাদিস সংগ্রহটি পাওয়া যায়নি"
+    HadithLoadError.EmptyCollection -> "পরে আবার চেষ্টা করুন"
+    is HadithLoadError.Unexpected -> "পরে আবার চেষ্টা করুন"
+}
+
+/** Short banner shown above cached hadiths when a refresh failed. */
+private fun HadithLoadError.bannerMessage(): String = when (this) {
+    HadithLoadError.NoInternet -> "অফলাইন — সংরক্ষিত তথ্য দেখছেন"
+    is HadithLoadError.ServerError -> "সার্ভার ত্রুটি — সংরক্ষিত তথ্য দেখছেন"
+    HadithLoadError.DataFormatError -> "নতুন তথ্য পড়া যায়নি — সংরক্ষিত তথ্য দেখছেন"
+    HadithLoadError.UnknownCollection -> "সংগ্রহ পাওয়া যায়নি — সংরক্ষিত তথ্য দেখছেন"
+    HadithLoadError.EmptyCollection -> "সংগ্রহ খালি — সংরক্ষিত তথ্য দেখছেন"
+    is HadithLoadError.Unexpected -> "সংরক্ষিত তথ্য দেখছেন"
 }

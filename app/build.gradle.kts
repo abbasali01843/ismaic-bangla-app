@@ -118,4 +118,6 @@ dependencies {
     // Unit testing (JVM + Robolectric; no instrumented tests in this project)
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+    testImplementation("androidx.navigation:navigation-testing:2.8.0")
 }

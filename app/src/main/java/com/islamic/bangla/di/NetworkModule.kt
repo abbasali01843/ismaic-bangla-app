@@ -52,10 +52,29 @@ object NetworkModule {
     fun provideAladhanRetrofit(client: OkHttpClient): Retrofit =
         buildRetrofit(client, "https://api.aladhan.com/v1/")
 
+    /**
+     * Dedicated client for hadith-api: edition files are 5–15 MB each, so the
+     * shared client's idle timeouts are too tight on slow mobile data. Other
+     * APIs (Quran, Prayer, Tafsir) keep using the shared client.
+     */
+    @Singleton
+    @Provides
+    @Named("hadithClient")
+    fun provideHadithOkHttpClient(): OkHttpClient {
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BASIC
+        }
+        return OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .addInterceptor(logging)
+            .build()
+    }
+
     @Singleton
     @Provides
     @Named("hadith")
-    fun provideHadithRetrofit(client: OkHttpClient): Retrofit =
+    fun provideHadithRetrofit(@Named("hadithClient") client: OkHttpClient): Retrofit =
         buildRetrofit(client, "https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/")
 
     @Singleton

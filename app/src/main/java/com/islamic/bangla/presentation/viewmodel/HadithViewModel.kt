@@ -6,7 +6,10 @@ import com.islamic.bangla.data.model.Hadith
 import com.islamic.bangla.data.preferences.SettingsStore
 import com.islamic.bangla.data.remote.HadithCollectionInfo
 import com.islamic.bangla.data.remote.HadithCollections
+import com.islamic.bangla.data.repository.HadithLoadError
+import com.islamic.bangla.data.repository.HadithRefreshResult
 import com.islamic.bangla.data.repository.HadithRepository
+import com.islamic.bangla.data.repository.toHadithLoadError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,8 +24,15 @@ data class HadithUiState(
     val isLoading: Boolean = false,
     /** True while a full collection is downloading from the API. */
     val isSyncing: Boolean = false,
-    /** True when the API failed and cached data (if any) is shown. */
+    /** True only when the device genuinely cannot reach the CDN. */
     val offline: Boolean = false,
+    /**
+     * Precise refresh failure (server / data / unknown / empty / …), or null
+     * when the last refresh succeeded. Cached hadiths stay visible alongside.
+     */
+    val syncError: HadithLoadError? = null,
+    /** True when Bangla loaded but the Arabic edition failed (best-effort). */
+    val arabicMissing: Boolean = false,
     val error: String? = null,
     val searchResults: List<Hadith> = emptyList(),
     val selectedHadith: Hadith? = null,
@@ -58,6 +68,8 @@ class HadithViewModel @Inject constructor(
                 selectedCollection = collection,
                 searchResults = emptyList(),
                 offline = false,
+                syncError = null,
+                arabicMissing = false,
                 error = null
             )
             observeJob = launch {
@@ -76,18 +88,43 @@ class HadithViewModel @Inject constructor(
                         System.currentTimeMillis() - lastSync > SYNC_STALE_MS
                     if (cached.isEmpty() || stale) {
                         _uiState.value = _uiState.value.copy(isSyncing = true)
-                        hadithRepository.refreshCollection(collection)
-                        settingsStore.setLastSync(collection)
+                        when (val result = hadithRepository.refreshCollection(collection)) {
+                            is HadithRefreshResult.Success -> {
+                                settingsStore.setLastSync(collection)
+                                _uiState.value = _uiState.value.copy(
+                                    isSyncing = false,
+                                    offline = false,
+                                    syncError = null,
+                                    arabicMissing = !result.arabicComplete,
+                                    error = null
+                                )
+                            }
+                            is HadithRefreshResult.Failure -> {
+                                // Cache fallback: the collector above keeps
+                                // showing cached hadiths; only flags change.
+                                _uiState.value = _uiState.value.copy(
+                                    isSyncing = false,
+                                    offline = result.error is HadithLoadError.NoInternet,
+                                    syncError = result.error,
+                                    arabicMissing = false
+                                )
+                            }
+                        }
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            isSyncing = false,
+                            offline = false,
+                            syncError = null,
+                            error = null
+                        )
                     }
+                } catch (e: Exception) {
+                    // Safety net for cache/DataStore failures (never the API:
+                    // refreshCollection returns results instead of throwing).
                     _uiState.value = _uiState.value.copy(
                         isSyncing = false,
                         offline = false,
-                        error = null
-                    )
-                } catch (e: Exception) {
-                    _uiState.value = _uiState.value.copy(
-                        isSyncing = false,
-                        offline = true
+                        syncError = e.toHadithLoadError()
                     )
                 }
             }

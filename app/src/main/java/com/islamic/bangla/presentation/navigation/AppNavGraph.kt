@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -115,13 +116,9 @@ fun AppNavGraph() {
                                 NavigationBarItem(
                                     selected = currentRoute == destination.screen.route,
                                     onClick = {
-                                        navController.navigate(destination.screen.route) {
-                                            popUpTo(navController.graph.findStartDestination().id) {
-                                                saveState = true
-                                            }
-                                            launchSingleTop = true
-                                            restoreState = true
-                                        }
+                                        navController.navigateToBottomDestination(
+                                            destination.screen.route
+                                        )
                                     },
                                     icon = {
                                         Icon(
@@ -225,5 +222,27 @@ fun AppNavGraph() {
                 }
             }
         }
+    }
+}
+
+/**
+ * Single bottom-navigation action shared by all five tabs (and covered by
+ * regression tests — see BottomNavigationTest).
+ *
+ * - Re-tapping the visible tab is a strict no-op: no duplicate destination
+ *   is pushed and the tab's state (e.g. scroll position) is preserved.
+ * - Switching tabs pops everything above the start destination (Home), so
+ *   the back stack never accumulates duplicate tab roots and Android Back
+ *   from any tab always lands back on Home.
+ * - Per-tab state is saved/restored across switches.
+ */
+internal fun NavController.navigateToBottomDestination(route: String) {
+    if (currentDestination?.route == route) return
+    navigate(route) {
+        popUpTo(graph.findStartDestination().id) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
     }
 }
