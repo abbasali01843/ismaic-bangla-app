@@ -79,7 +79,9 @@ jobs:
           for f in lint-output.txt test-output.txt build-output.txt; do
             if [ -f "$f" ]; then
               echo "===== $f =====" >> ci-diag.txt
-              grep -aE "^e: |error:|FAILED|What went wrong|Execution failed|Test.*FAILED|tests? (failed|completed)" "$f" | head -60 >> ci-diag.txt || true
+              grep -aE "^e: |error:|FAILED|What went wrong|Execution failed|Caused by|KaptExecution|kapt.*[Ee]xception" "$f" | head -80 >> ci-diag.txt || true
+              echo "--- tail of $f ---" >> ci-diag.txt
+              tail -30 "$f" >> ci-diag.txt || true
             fi
           done
           for r in app/build/reports/lint-results-debug.xml; do

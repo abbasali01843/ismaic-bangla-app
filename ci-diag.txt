@@ -1,6 +1,0 @@
-===== lint-output.txt =====
-> Task :app:kaptDebugKotlin FAILED
-* What went wrong:
-Execution failed for task ':app:kaptDebugKotlin'.
-org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':app:kaptDebugKotlin'.
-BUILD FAILED in 47s
