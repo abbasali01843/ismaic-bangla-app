@@ -8,18 +8,7 @@ TEST-com.islamic.bangla.presentation.viewmodel.HadithViewModelTest.xml
 TEST-com.islamic.bangla.presentation.viewmodel.QiblaBearingTest.xml
 binary
 === FAILED TESTCASES (from XML) ===
-  <testcase name="homeTapFromSecondaryScreen_popsEverythingAboveHome" classname="com.islamic.bangla.presentation.navigation.BottomNavigationTest" time="0.04">
-    <failure message="org.junit.ComparisonFailure: expected:&lt;[home]&gt; but was:&lt;[surah/{surahNumber}]&gt;" type="org.junit.ComparisonFailure">org.junit.ComparisonFailure: expected:&lt;[home]&gt; but was:&lt;[surah/{surahNumber}]&gt;
-	at org.junit.Assert.assertEquals(Assert.java:117)
-	at org.junit.Assert.assertEquals(Assert.java:146)
-	at com.islamic.bangla.presentation.navigation.BottomNavigationTest.homeTapFromSecondaryScreen_popsEverythingAboveHome(BottomNavigationTest.kt:114)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
---
-  <testcase name="serverErrorWithCache_keepsCacheAndStaysOnline" classname="com.islamic.bangla.presentation.viewmodel.HadithViewModelTest" time="20.03">
+  <testcase name="serverErrorWithCache_keepsCacheAndStaysOnline" classname="com.islamic.bangla.presentation.viewmodel.HadithViewModelTest" time="20.027">
     <failure message="kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 20000 ms" type="kotlinx.coroutines.TimeoutCancellationException">kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 20000 ms
 	at _COROUTINE._BOUNDARY._(CoroutineDebugging.kt:42)
 	at kotlinx.coroutines.flow.StateFlowImpl.collect(StateFlow.kt:406)
@@ -30,7 +19,6 @@ Caused by: kotlinx.coroutines.TimeoutCancellationException: Timed out waiting fo
 	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:188)
 	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:156)
 === TASKS THAT FAILED ===
-BottomNavigationTest > homeTapFromSecondaryScreen_popsEverythingAboveHome FAILED
 HadithViewModelTest > serverErrorWithCache_keepsCacheAndStaysOnline FAILED
 > Task :app:testDebugUnitTest FAILED
 BUILD FAILED in 36s
