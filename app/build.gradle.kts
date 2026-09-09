@@ -83,8 +83,8 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.0")
 
     // Hilt (Dependency Injection)
-    implementation("com.google.dagger:hilt-android:2.56.2")
-    kapt("com.google.dagger:hilt-android-compiler:2.56.2")
+    implementation("com.google.dagger:hilt-android:2.52")
+    kapt("com.google.dagger:hilt-android-compiler:2.52")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Room Database
