@@ -68,29 +68,16 @@ jobs:
       - name: Collect diagnostics
         if: always()
         run: |
+          set +e
           {
-            echo "=== TEST XML SUMMARY ==="
+            echo "=== TEST RESULTS DIR ==="
             ls app/build/test-results/testDebugUnitTest/ 2>/dev/null || echo "(no test-results dir)"
-            for f in app/build/test-results/testDebugUnitTest/*.xml; do
-              [ -f "$f" ] || continue
-              echo "--- $f"
-              python3 - "$f" <<'PYEOF'
-              import sys, xml.etree.ElementTree as ET
-              try:
-                r = ET.parse(sys.argv[1]).getroot()
-                print("tests=%s failures=%s errors=%s skipped=%s" % (r.get("tests"), r.get("failures"), r.get("errors"), r.get("skipped")))
-                for tc in r.iter("testcase"):
-                  for res in list(tc):
-                    if res.tag in ("failure", "error"):
-                      print("FAILED: %s :: %s" % (tc.get("classname"), tc.get("name")))
-                      print("MESSAGE: %s" % ((res.get("message") or "")[:1500]))
-                      print("TRACE: %s" % ((res.text or "")[:2500]))
-              except Exception as e:
-                print("parse error: %s" % e)
-              PYEOF
-            done
-            echo "=== GRADLE TAIL (last 120 lines) ==="
-            tail -120 unit-tests.log 2>/dev/null || echo "(no unit-tests.log)"
+            echo "=== FAILED TESTCASES (from XML) ==="
+            grep -h -B1 -A8 "<failure\|<error" app/build/test-results/testDebugUnitTest/*.xml 2>/dev/null | head -120 || true
+            echo "=== TASKS THAT FAILED ==="
+            grep -E "FAILED|error:|e: " unit-tests.log 2>/dev/null | head -60 || true
+            echo "=== GRADLE TAIL (last 150 lines) ==="
+            tail -150 unit-tests.log 2>/dev/null || echo "(no unit-tests.log)"
           } > ci-diag.txt 2>&1
           git config user.name "arena-agent"
           git config user.email "arena-agent@users.noreply.github.com"
