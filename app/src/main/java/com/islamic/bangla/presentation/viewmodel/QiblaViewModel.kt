@@ -31,8 +31,8 @@ data class QiblaUiState(
     val accuracyLow: Boolean = false
 ) {
     companion object {
-        // Bearing from Dhaka to the Kaaba (used until real location loads).
-        const val DEFAULT_BEARING = 243.6
+        // Great-circle bearing from Dhaka to the Kaaba (used until real location loads).
+        const val DEFAULT_BEARING = 277.5
     }
 }
 
