@@ -58,25 +58,36 @@ jobs:
           ./gradlew --version
 
       - name: Lint
-        run: ./gradlew lintDebug --stacktrace
+        run: |
+          ./gradlew lintDebug --stacktrace 2>&1 | tee lint-output.txt
+          exit ${PIPESTATUS[0]}
 
       - name: Unit tests
-        run: ./gradlew testDebugUnitTest --stacktrace
+        run: |
+          ./gradlew testDebugUnitTest --stacktrace 2>&1 | tee test-output.txt
+          exit ${PIPESTATUS[0]}
 
       - name: Build debug + release APKs
-        run: ./gradlew assembleDebug assembleRelease --stacktrace
+        run: |
+          ./gradlew assembleDebug assembleRelease --stacktrace 2>&1 | tee build-output.txt
+          exit ${PIPESTATUS[0]}
 
       - name: Capture diagnosis on failure (TEMPORARY)
         if: failure()
         run: |
-          {
-            echo "=== gradle wrapper --stacktrace ==="
-            gradle wrapper --stacktrace || true
-            echo "=== files ==="
-            ls -la gradle/wrapper/ || true
-          } > ci-diag.txt 2>&1
-          tail -c 100000 ci-diag.txt > ci-diag-small.txt || true
-          mv ci-diag-small.txt ci-diag.txt || true
+          rm -f ci-diag.txt
+          for f in lint-output.txt test-output.txt build-output.txt; do
+            if [ -f "$f" ]; then
+              echo "===== $f =====" >> ci-diag.txt
+              grep -aE "^e: |error:|FAILED|What went wrong|Execution failed|Test.*FAILED|tests? (failed|completed)" "$f" | head -60 >> ci-diag.txt || true
+            fi
+          done
+          for r in app/build/reports/lint-results-debug.xml; do
+            if [ -f "$r" ]; then
+              echo "===== $r (errors only) =====" >> ci-diag.txt
+              grep -a "severity=\"Error\"" "$r" | head -40 >> ci-diag.txt || true
+            fi
+          done
           git config user.name "arena-agent"
           git config user.email "arena-agent@users.noreply.github.com"
           git add -f ci-diag.txt
