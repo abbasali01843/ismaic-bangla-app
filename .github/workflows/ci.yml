@@ -84,7 +84,7 @@ jobs:
           for f in insight.txt lint-output.txt test-output.txt build-output.txt; do
             if [ -f "$f" ]; then
               echo "===== $f =====" >> ci-diag.txt
-              grep -aE "^e: |error:|FAILED|What went wrong|Execution failed|Caused by|KaptExecution|kapt.*[Ee]xception" "$f" | head -80 >> ci-diag.txt || true
+              grep -aiE "^e: |error:|FAILED|What went wrong|Execution failed|Caused by|KaptExecution|kapt.*exception" "$f" | head -80 >> ci-diag.txt || true
               if [ "$f" = "insight.txt" ]; then
             cat "$f" >> ci-diag.txt || true
           else
@@ -93,10 +93,12 @@ jobs:
           fi
             fi
           done
-          for r in app/build/reports/lint-results-debug.xml; do
+          echo "===== lint reports dir =====" >> ci-diag.txt
+          ls app/build/reports/ >> ci-diag.txt 2>&1 || true
+          for r in app/build/reports/lint-results-debug.txt; do
             if [ -f "$r" ]; then
               echo "===== $r (errors only) =====" >> ci-diag.txt
-              grep -a "severity=\"Error\"" "$r" | head -40 >> ci-diag.txt || true
+              grep -a -B2 -A6 "Error:" "$r" | head -120 >> ci-diag.txt || true
             fi
           done
           git config user.name "arena-agent"
