@@ -1,9 +1,11 @@
 package com.islamic.bangla.presentation.navigation
 
+import androidx.navigation.NavType
+import androidx.navigation.compose.ComposeNavigator
+import androidx.navigation.compose.composable
 import androidx.navigation.createGraph
+import androidx.navigation.navArgument
 import androidx.navigation.testing.TestNavHostController
-import androidx.navigation.testing.TestNavigator
-import androidx.navigation.testing.test
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -16,8 +18,11 @@ import org.robolectric.annotation.Config
 /**
  * Regression tests for the bottom-navigation action
  * ([navigateToBottomDestination]) on a graph mirroring the production
- * [Screen] routes: Home is the start destination, the other four tabs and a
- * secondary screen hang off the same flat graph.
+ * [Screen] routes: Home is the start destination, the other four tabs and
+ * secondary screens hang off the same flat graph.
+ *
+ * The real ComposeNavigator drives the back stack headlessly (no UI
+ * composition needed to verify navigation logic).
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -28,20 +33,22 @@ class BottomNavigationTest {
     @Before
     fun setup() {
         navController = TestNavHostController(RuntimeEnvironment.getApplication())
-        // TestNavHostController normally registers this itself; tolerate both.
         try {
-            navController.navigatorProvider.getNavigator<TestNavigator>("test")
+            navController.navigatorProvider.addNavigator(ComposeNavigator())
         } catch (e: Exception) {
-            navController.navigatorProvider.addNavigator(TestNavigator())
+            // Already registered by the controller; either way we have one.
         }
         navController.graph = navController.createGraph(startDestination = "home") {
-            test("home")
-            test("quran")
-            test("hadith")
-            test("dua")
-            test("prayer")
-            test("surah/{surahNumber}")
-            test("search")
+            composable("home") {}
+            composable("quran") {}
+            composable("hadith") {}
+            composable("dua") {}
+            composable("prayer") {}
+            composable(
+                route = "surah/{surahNumber}",
+                arguments = listOf(navArgument("surahNumber") { type = NavType.IntType })
+            ) {}
+            composable("search") {}
         }
     }
 
