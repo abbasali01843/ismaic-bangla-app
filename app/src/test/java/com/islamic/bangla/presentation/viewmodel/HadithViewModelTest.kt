@@ -111,10 +111,12 @@ class HadithViewModelTest {
 
     @Test
     fun serverErrorWithCache_keepsCacheAndStaysOnline(): Unit = runBlocking {
+        // A dedicated collection: last-sync timestamps are per collection,
+        // so other tests can never make this refresh look "fresh".
         dao.insertHadith(
             Hadith(
                 hadithId = 1,
-                collection = "bukhari",
+                collection = "muslim",
                 bookName = "",
                 hadithNumber = "1",
                 arabicText = "",
@@ -130,8 +132,9 @@ class HadithViewModelTest {
         // Warm cache: wait for the refresh failure itself, not for hadiths
         // (cached rows are already visible before the refresh even starts).
         val vm = viewModel()
+        vm.selectCollection("muslim")
         val state = withTimeout(20_000) {
-            vm.uiState.first { it.syncError != null }
+            vm.uiState.first { it.selectedCollection == "muslim" && it.syncError != null }
         }
 
         // Cache fallback: cached hadith stays visible…
