@@ -4,7 +4,9 @@ import com.islamic.bangla.data.local.dao.QuranDao
 import com.islamic.bangla.data.model.Quran
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class QuranRepository @Inject constructor(
     private val quranDao: QuranDao
 ) {

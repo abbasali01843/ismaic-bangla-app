@@ -4,7 +4,9 @@ import com.islamic.bangla.data.local.dao.DuaDao
 import com.islamic.bangla.data.model.Dua
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class DuaRepository @Inject constructor(
     private val duaDao: DuaDao
 ) {

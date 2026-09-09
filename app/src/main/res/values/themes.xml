@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme (Compose renders the UI, so this only styles the window). -->
+    <style name="Theme.IslamicBanglaApp" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

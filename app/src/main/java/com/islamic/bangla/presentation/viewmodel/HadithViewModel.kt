@@ -3,87 +3,93 @@ package com.islamic.bangla.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.islamic.bangla.data.model.Hadith
+import com.islamic.bangla.data.preferences.SettingsStore
+import com.islamic.bangla.data.remote.HadithCollectionInfo
+import com.islamic.bangla.data.remote.HadithCollections
 import com.islamic.bangla.data.repository.HadithRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class HadithUiState(
     val hadiths: List<Hadith> = emptyList(),
     val isLoading: Boolean = false,
+    /** True while a full collection is downloading from the API. */
+    val isSyncing: Boolean = false,
+    /** True when the API failed and cached data (if any) is shown. */
+    val offline: Boolean = false,
     val error: String? = null,
     val searchResults: List<Hadith> = emptyList(),
     val selectedHadith: Hadith? = null,
-    val collections: List<String> = emptyList(),
+    val collections: List<HadithCollectionInfo> = HadithCollections.all,
     val selectedCollection: String? = null
 )
 
 @HiltViewModel
 class HadithViewModel @Inject constructor(
-    private val hadithRepository: HadithRepository
+    private val hadithRepository: HadithRepository,
+    private val settingsStore: SettingsStore
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HadithUiState())
     val uiState: StateFlow<HadithUiState> = _uiState.asStateFlow()
 
+    private var observeJob: Job? = null
+
     init {
-        loadAllHadiths()
-        loadCollections()
+        selectCollection(HadithCollections.all.first().key)
     }
 
-    fun loadAllHadiths() {
+    /**
+     * API-first with cache fallback. Collections are large, so a full
+     * re-download happens only when the cache is empty or older than 7 days;
+     * otherwise the cache is shown instantly.
+     */
+    fun selectCollection(collection: String) {
+        observeJob?.cancel()
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            try {
-                hadithRepository.getAllHadiths().collect { hadiths ->
-                    _uiState.value = _uiState.value.copy(
-                        hadiths = hadiths,
-                        isLoading = false,
-                        error = null
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to load hadiths"
-                )
-            }
-        }
-    }
-
-    fun loadHadithsByCollection(collection: String) {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, selectedCollection = collection)
-            try {
+            _uiState.value = _uiState.value.copy(
+                isLoading = true,
+                selectedCollection = collection,
+                searchResults = emptyList(),
+                offline = false,
+                error = null
+            )
+            observeJob = launch {
                 hadithRepository.getHadithsByCollection(collection).collect { hadiths ->
                     _uiState.value = _uiState.value.copy(
                         hadiths = hadiths,
-                        isLoading = false,
-                        error = null
+                        isLoading = false
                     )
                 }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to load hadiths"
-                )
             }
-        }
-    }
-
-    private fun loadCollections() {
-        viewModelScope.launch {
-            try {
-                hadithRepository.getHadithCollections().collect { collections ->
-                    _uiState.value = _uiState.value.copy(collections = collections)
+            launch {
+                try {
+                    val cached = hadithRepository.getHadithsByCollection(collection).first()
+                    val lastSync = settingsStore.getLastSync(collection)
+                    val stale = lastSync == null ||
+                        System.currentTimeMillis() - lastSync > SYNC_STALE_MS
+                    if (cached.isEmpty() || stale) {
+                        _uiState.value = _uiState.value.copy(isSyncing = true)
+                        hadithRepository.refreshCollection(collection)
+                        settingsStore.setLastSync(collection)
+                    }
+                    _uiState.value = _uiState.value.copy(
+                        isSyncing = false,
+                        offline = false,
+                        error = null
+                    )
+                } catch (e: Exception) {
+                    _uiState.value = _uiState.value.copy(
+                        isSyncing = false,
+                        offline = true
+                    )
                 }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Failed to load collections"
-                )
             }
         }
     }
@@ -99,7 +105,7 @@ class HadithViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Search failed"
+                    error = e.message ?: "অনুসন্ধান ব্যর্থ হয়েছে"
                 )
             }
         }
@@ -115,5 +121,9 @@ class HadithViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    companion object {
+        private const val SYNC_STALE_MS = 7L * 24 * 60 * 60 * 1000 // 7 days
     }
 }

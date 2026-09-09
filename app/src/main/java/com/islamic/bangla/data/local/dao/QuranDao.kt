@@ -2,16 +2,17 @@ package com.islamic.bangla.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.islamic.bangla.data.model.Quran
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface QuranDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertQuran(quran: Quran)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAllQuran(quranList: List<Quran>)
 
     @Query("SELECT * FROM quran ORDER BY surahNumber ASC")

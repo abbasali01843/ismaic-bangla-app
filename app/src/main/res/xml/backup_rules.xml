@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Auto Backup rules (API 23-30; API 31+ uses data_extraction_rules.xml).
+  Because <include> elements are present, ONLY the listed paths are backed up.
+  User data (bookmarks, notes, prayer log, reading progress, settings) is
+  preserved; bulky re-downloadable audio and caches are left out.
+-->
+<full-backup-content>
+    <!-- Room database: bookmarks, notes, prayer log, last-read, offline cache. -->
+    <include domain="database" path="islamic_database" />
+    <include domain="database" path="islamic_database-wal" />
+    <include domain="database" path="islamic_database-shm" />
+    <include domain="database" path="islamic_database-journal" />
+    <!-- DataStore preferences: theme, prayer prefs, tasbih, reciter, searches. -->
+    <include domain="file" path="datastore/" />
+    <!-- Downloaded ayah audio (filesDir/audio/...) + azan clip: disposable,
+         re-downloaded on demand. Excluded explicitly for clarity. -->
+    <exclude domain="file" path="audio/" />
+    <exclude domain="file" path="azan.ogg" />
+</full-backup-content>

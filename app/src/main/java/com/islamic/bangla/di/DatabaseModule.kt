@@ -2,12 +2,18 @@ package com.islamic.bangla.di
 
 import android.content.Context
 import androidx.room.Room
+import com.islamic.bangla.data.local.dao.AyahDao
+import com.islamic.bangla.data.local.dao.BookmarkDao
+import com.islamic.bangla.data.local.dao.DuaDao
+import com.islamic.bangla.data.local.dao.HadithDao
+import com.islamic.bangla.data.local.dao.LastReadDao
+import com.islamic.bangla.data.local.dao.NoteDao
+import com.islamic.bangla.data.local.dao.PrayerLogDao
+import com.islamic.bangla.data.local.dao.PrayerTimeDao
+import com.islamic.bangla.data.local.dao.QuranDao
+import com.islamic.bangla.data.local.dao.TafsirDao
 import com.islamic.bangla.data.local.database.IslamicDatabase
-import com.islamic.bangla.data.repository.AyahRepository
-import com.islamic.bangla.data.repository.DuaRepository
-import com.islamic.bangla.data.repository.HadithRepository
-import com.islamic.bangla.data.repository.PrayerTimeRepository
-import com.islamic.bangla.data.repository.QuranRepository
+import com.islamic.bangla.data.local.database.MIGRATION_5_6
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,45 +25,45 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
-    @Singleton
     @Provides
-    fun provideIslamicDatabase(
-        @ApplicationContext context: Context
-    ): IslamicDatabase {
-        return Room.databaseBuilder(
-            context,
-            IslamicDatabase::class.java,
-            "islamic_database"
-        ).build()
-    }
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): IslamicDatabase =
+        Room.databaseBuilder(context, IslamicDatabase::class.java, "islamic_database")
+            .addMigrations(MIGRATION_5_6)
+            // Upgrades always migrate (never wipe). Only a version *downgrade*
+            // (installing an older APK over a newer DB) recreates the schema.
+            .fallbackToDestructiveMigrationOnDowngrade()
+            .build()
 
-    @Singleton
     @Provides
-    fun provideQuranRepository(database: IslamicDatabase): QuranRepository {
-        return QuranRepository(database.quranDao())
-    }
+    fun provideQuranDao(database: IslamicDatabase): QuranDao = database.quranDao()
 
-    @Singleton
     @Provides
-    fun provideAyahRepository(database: IslamicDatabase): AyahRepository {
-        return AyahRepository(database.ayahDao())
-    }
+    fun provideAyahDao(database: IslamicDatabase): AyahDao = database.ayahDao()
 
-    @Singleton
     @Provides
-    fun provideHadithRepository(database: IslamicDatabase): HadithRepository {
-        return HadithRepository(database.hadithDao())
-    }
+    fun provideHadithDao(database: IslamicDatabase): HadithDao = database.hadithDao()
 
-    @Singleton
     @Provides
-    fun provideDuaRepository(database: IslamicDatabase): DuaRepository {
-        return DuaRepository(database.duaDao())
-    }
+    fun provideDuaDao(database: IslamicDatabase): DuaDao = database.duaDao()
 
-    @Singleton
     @Provides
-    fun providePrayerTimeRepository(database: IslamicDatabase): PrayerTimeRepository {
-        return PrayerTimeRepository(database.prayerTimeDao())
-    }
+    fun providePrayerTimeDao(database: IslamicDatabase): PrayerTimeDao =
+        database.prayerTimeDao()
+
+    @Provides
+    fun providePrayerLogDao(database: IslamicDatabase): PrayerLogDao =
+        database.prayerLogDao()
+
+    @Provides
+    fun provideBookmarkDao(database: IslamicDatabase): BookmarkDao = database.bookmarkDao()
+
+    @Provides
+    fun provideLastReadDao(database: IslamicDatabase): LastReadDao = database.lastReadDao()
+
+    @Provides
+    fun provideNoteDao(database: IslamicDatabase): NoteDao = database.noteDao()
+
+    @Provides
+    fun provideTafsirDao(database: IslamicDatabase): TafsirDao = database.tafsirDao()
 }

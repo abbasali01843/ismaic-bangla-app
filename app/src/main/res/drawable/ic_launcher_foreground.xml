@@ -1,0 +1,15 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Crescent: big disc minus offset disc, drawn with even-odd fill. -->
+    <path
+        android:fillColor="#E8B84B"
+        android:fillType="evenOdd"
+        android:pathData="M26,56 a24,24 0 1,0 48,0 a24,24 0 1,0 -48,0 M40,48 a20,20 0 1,0 40,0 a20,20 0 1,0 -40,0" />
+    <!-- Five-point star. -->
+    <path
+        android:fillColor="#E8B84B"
+        android:pathData="M68,29 L70.2,35 L76.6,35.2 L71.5,39.1 L73.3,45.3 L68,41.7 L62.7,45.3 L64.5,39.1 L59.4,35.2 L65.8,35 Z" />
+</vector>
