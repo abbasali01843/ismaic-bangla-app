@@ -342,24 +342,49 @@ private fun SurahRow(surah: Surah, onClick: () -> Unit) {
 @Composable
 private fun SurahDetails(surah: Surah, fontSize: Float, verses: List<QuranVerseEntity>, bookmarks: List<BookmarkEntity>, onToggleBookmark: () -> Unit, onToggleVerseBookmark: (QuranVerseEntity) -> Unit, onBack: () -> Unit) {
     val isBookmarked = bookmarks.any { it.verseKey == "surah:${surah.number}" }
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        TextButton(onClick = onBack) { Text("← সূরা তালিকায় ফিরে যান") }
-        Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
-            Column(Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(surah.arabic, fontSize = (fontSize + 6).sp)
-                Text(surah.bangla, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                Text(surah.english)
-                Text(surah.number.toString() + " নম্বর সূরা • " + surah.ayahs + " আয়াত • " + surah.place)
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(bottom = 20.dp)
+    ) {
+        item(key = "back") {
+            TextButton(onClick = onBack) { Text("← সূরা তালিকায় ফিরে যান") }
+        }
+        item(key = "surah-header") {
+            Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+                Column(Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(surah.arabic, fontSize = (fontSize + 6).sp)
+                    Text(surah.bangla, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Text(surah.english)
+                    Text("${surah.number} নম্বর সূরা • ${surah.ayahs} আয়াত • ${surah.place}")
+                }
             }
         }
-        Button(onClick = onToggleBookmark, modifier = Modifier.fillMaxWidth()) { Text(if (isBookmarked) "★ বুকমার্ক থেকে সরান" else "☆ সূরা বুকমার্ক করুন") }
-        Text("আয়াতের পাঠ", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        item(key = "surah-bookmark") {
+            Button(onClick = onToggleBookmark, modifier = Modifier.fillMaxWidth()) {
+                Text(if (isBookmarked) "★ বুকমার্ক থেকে সরান" else "☆ সূরা বুকমার্ক করুন")
+            }
+        }
+        item(key = "verse-heading") {
+            Text("আয়াতের পাঠ", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        }
         if (verses.isEmpty()) {
-            EmptyFeature("আয়াতের ডেটা এখনো নেই", "এই সূরার জন্য স্থানীয় ডেটাবেসে এখনো কোনো আয়াত পাওয়া যায়নি। ডেটাসেট যুক্ত হলে আয়াত ও উপলভ্য অনুবাদ এখানে অফলাইনে দেখা যাবে।")
+            item(key = "no-verses") {
+                Card(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("আয়াতের ডেটা এখনো নেই", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text("এই সূরার জন্য স্থানীয় ডেটাবেসে এখনো কোনো আয়াত পাওয়া যায়নি। যাচাইকৃত ডেটাসেট যুক্ত হলে আয়াত ও উপলভ্য অনুবাদ এখানে অফলাইনে দেখা যাবে।")
+                    }
+                }
+            }
         } else {
-            Text("${verses.size}টি আয়াত", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            verses.forEach { verse ->
-                VerseCard(verse, fontSize, bookmarks.any { it.verseKey == verse.verseKey }) { onToggleVerseBookmark(verse) }
+            item(key = "verse-count") {
+                Text("${verses.size}টি আয়াত", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            items(verses, key = { it.verseKey }) { verse ->
+                VerseCard(verse, fontSize, bookmarks.any { it.verseKey == verse.verseKey }) {
+                    onToggleVerseBookmark(verse)
+                }
             }
         }
     }
