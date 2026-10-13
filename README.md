@@ -55,7 +55,7 @@ See [Quran Foundation Developer Terms](https://api-docs.quran.com/legal/develope
 - [ ] Select and document a verified Quran text and Bengali translation source
 - [ ] Add a safe, repeatable content import/sync pipeline
 - [ ] Populate and verify the complete offline Quran + selected translation
-- [ ] Search across locally stored translation text
+- [x] Bengali translation-search UI and local Room query (results require translation data to be imported)
 - [ ] Android 11 device testing
 - [ ] AI assistant (later milestone)
 
