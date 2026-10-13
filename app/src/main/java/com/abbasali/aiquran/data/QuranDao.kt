@@ -12,6 +12,9 @@ interface QuranDao {
     @Query("SELECT * FROM quran_verses WHERE surahNumber = :surah ORDER BY ayahNumber")
     fun observeVerses(surah: Int): Flow<List<QuranVerseEntity>>
 
+    @Query("SELECT COUNT(*) FROM quran_verses")
+    suspend fun countVerses(): Int
+
     @Query("SELECT * FROM quran_verses WHERE verseKey = :verseKey LIMIT 1")
     suspend fun getVerse(verseKey: String): QuranVerseEntity?
 
