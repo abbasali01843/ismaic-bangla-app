@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.produceState
 import kotlinx.coroutines.launch
 import com.abbasali.aiquran.data.BookmarkEntity
+import com.abbasali.aiquran.data.QuranVerseEntity
 import com.abbasali.aiquran.data.QuranDatabase
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -168,6 +169,14 @@ private fun QuranApp() {
     val bookmarks by produceState(initialValue = emptyList<BookmarkEntity>(), context) {
         QuranDatabase.getInstance(context).quranDao().observeBookmarks().collect { value = it }
     }
+    val verses by produceState(initialValue = emptyList<QuranVerseEntity>(), openedSurah?.number, context) {
+        val number = openedSurah?.number
+        if (number == null) {
+            value = emptyList()
+        } else {
+            QuranDatabase.getInstance(context).quranDao().observeVerses(number).collect { value = it }
+        }
+    }
     val savedSurahs = remember(bookmarks) {
         surahs.filter { s -> bookmarks.any { it.verseKey == "surah:${s.number}" } }
     }
@@ -223,7 +232,13 @@ private fun QuranApp() {
             }
             Spacer(Modifier.height(10.dp))
             if (openedSurah != null) {
-                SurahDetails(openedSurah!!, fontSize, bookmarks.any { it.verseKey == "surah:${openedSurah!!.number}" }, { toggleSurahBookmark(openedSurah!!) }) { openedSurah = null }
+                SurahDetails(openedSurah!!, fontSize, verses, bookmarks, { toggleSurahBookmark(openedSurah!!) }, { verse ->
+                    scope.launch {
+                        val dao = QuranDatabase.getInstance(context).quranDao()
+                        if (bookmarks.any { it.verseKey == verse.verseKey }) dao.deleteBookmark(verse.verseKey)
+                        else dao.upsertBookmark(BookmarkEntity(verseKey = verse.verseKey, createdAtEpochMillis = System.currentTimeMillis(), note = "saved-ayah"))
+                    }
+                }) { openedSurah = null }
             } else when (tab) {
                 Tab.HOME -> HomeScreen(fontSize, { tab = Tab.SURAHS }, lastReadSurah, { openSurah(it) }, { openSurah(it) })
                 Tab.SURAHS -> {
@@ -300,7 +315,8 @@ private fun SurahRow(surah: Surah, onClick: () -> Unit) {
 }
 
 @Composable
-private fun SurahDetails(surah: Surah, fontSize: Float, isBookmarked: Boolean, onToggleBookmark: () -> Unit, onBack: () -> Unit) {
+private fun SurahDetails(surah: Surah, fontSize: Float, verses: List<QuranVerseEntity>, bookmarks: List<BookmarkEntity>, onToggleBookmark: () -> Unit, onToggleVerseBookmark: (QuranVerseEntity) -> Unit, onBack: () -> Unit) {
+    val isBookmarked = bookmarks.any { it.verseKey == "surah:${surah.number}" }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         TextButton(onClick = onBack) { Text("← সূরা তালিকায় ফিরে যান") }
         Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
@@ -313,7 +329,14 @@ private fun SurahDetails(surah: Surah, fontSize: Float, isBookmarked: Boolean, o
         }
         Button(onClick = onToggleBookmark, modifier = Modifier.fillMaxWidth()) { Text(if (isBookmarked) "★ বুকমার্ক থেকে সরান" else "☆ সূরা বুকমার্ক করুন") }
         Text("আয়াতের পাঠ", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        Text("এই সূরার পূর্ণ আরবি আয়াত ও বাংলা অনুবাদ পরবর্তী ডেটা-সিঙ্ক ধাপে যুক্ত হবে। ভুল বা অসম্পূর্ণ কুরআনের পাঠ দেখানোর পরিবর্তে এখানে স্পষ্টভাবে জানানো হচ্ছে যে ডেটা এখনো যোগ হয়নি।", style = MaterialTheme.typography.bodyLarge)
+        if (verses.isEmpty()) {
+            EmptyFeature("আয়াতের ডেটা এখনো নেই", "এই সূরার জন্য স্থানীয় ডেটাবেসে এখনো কোনো আয়াত পাওয়া যায়নি। ডেটাসেট যুক্ত হলে আয়াত ও উপলভ্য অনুবাদ এখানে অফলাইনে দেখা যাবে।")
+        } else {
+            Text("${verses.size}টি আয়াত", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            verses.forEach { verse ->
+                VerseCard(verse, fontSize, bookmarks.any { it.verseKey == verse.verseKey }) { onToggleVerseBookmark(verse) }
+            }
+        }
     }
 }
 
@@ -322,5 +345,60 @@ private fun EmptyFeature(title: String, body: String) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Card(Modifier.fillMaxWidth()) { Text(body, Modifier.padding(18.dp), style = MaterialTheme.typography.bodyLarge) }
+    }
+}
+
+
+@Composable
+private fun VerseCard(
+    verse: QuranVerseEntity,
+    fontSize: Float,
+    isBookmarked: Boolean,
+    onToggleBookmark: () -> Unit
+) {
+    val context = LocalContext.current
+    val translations by produceState(
+        initialValue = emptyList<com.abbasali.aiquran.data.TranslationEntity>(),
+        verse.verseKey,
+        context
+    ) {
+        QuranDatabase.getInstance(context).quranDao()
+            .observeTranslations(verse.verseKey)
+            .collect { value = it }
+    }
+    Card(Modifier.fillMaxWidth()) {
+        Column(
+            Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "\${verse.surahNumber}:\${verse.ayahNumber}",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = onToggleBookmark) {
+                    Text(if (isBookmarked) "★ সংরক্ষিত" else "☆ আয়াত সংরক্ষণ")
+                }
+            }
+            Text(
+                verse.arabicText,
+                Modifier.fillMaxWidth(),
+                fontSize = fontSize.sp,
+                textAlign = TextAlign.End,
+                lineHeight = (fontSize * 1.8f).sp
+            )
+            translations.forEach { translation ->
+                HorizontalDivider()
+                Text(translation.editionName, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                Text(translation.translationText, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "উৎস: \${translation.attribution}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
     }
 }
