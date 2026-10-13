@@ -171,6 +171,23 @@ private fun QuranApp() {
     val savedSurahs = remember(bookmarks) {
         surahs.filter { s -> bookmarks.any { it.verseKey == "surah:${s.number}" } }
     }
+    val lastReadSurah = remember(bookmarks) {
+        val marker = bookmarks.firstOrNull { it.verseKey == "last-read" }?.note
+        val number = marker?.removePrefix("surah:")?.toIntOrNull()
+        surahs.firstOrNull { it.number == number }
+    }
+    fun openSurah(surah: Surah) {
+        openedSurah = surah
+        scope.launch {
+            QuranDatabase.getInstance(context).quranDao().upsertBookmark(
+                BookmarkEntity(
+                    verseKey = "last-read",
+                    createdAtEpochMillis = System.currentTimeMillis(),
+                    note = "surah:${surah.number}"
+                )
+            )
+        }
+    }
     fun toggleSurahBookmark(surah: Surah) {
         scope.launch {
             val dao = QuranDatabase.getInstance(context).quranDao()
@@ -208,12 +225,12 @@ private fun QuranApp() {
             if (openedSurah != null) {
                 SurahDetails(openedSurah!!, fontSize, bookmarks.any { it.verseKey == "surah:${openedSurah!!.number}" }, { toggleSurahBookmark(openedSurah!!) }) { openedSurah = null }
             } else when (tab) {
-                Tab.HOME -> HomeScreen(fontSize, { tab = Tab.SURAHS }, { openedSurah = it })
+                Tab.HOME -> HomeScreen(fontSize, { tab = Tab.SURAHS }, lastReadSurah, { openSurah(it) }, { openSurah(it) })
                 Tab.SURAHS -> {
                     OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth(), label = { Text("সূরা খুঁজুন") }, placeholder = { Text("বাংলা/ইংরেজি নাম বা নম্বর") }, singleLine = true)
                     val filtered = surahs.filter { it.bangla.contains(query, true) || it.english.contains(query, true) || it.number.toString() == query.trim() }
                     Text("মোট " + surahs.size + "টি সূরা", Modifier.padding(vertical = 8.dp), style = MaterialTheme.typography.titleMedium)
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(7.dp)) { items(filtered, key = { it.number }) { SurahRow(it) { openedSurah = it } } }
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(7.dp)) { items(filtered, key = { it.number }) { SurahRow(it) { openSurah(it) } } }
                 }
                 Tab.BOOKMARKS -> {
                     if (savedSurahs.isEmpty()) {
@@ -222,7 +239,7 @@ private fun QuranApp() {
                         Column(Modifier.fillMaxSize()) {
                             Text("সংরক্ষিত সূরা (${savedSurahs.size})", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                             LazyColumn(verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                                items(savedSurahs, key = { it.number }) { s -> SurahRow(s) { openedSurah = s } }
+                                items(savedSurahs, key = { it.number }) { s -> SurahRow(s) { openSurah(s) } }
                             }
                         }
                     }
@@ -240,7 +257,7 @@ private fun QuranApp() {
 }
 
 @Composable
-private fun HomeScreen(fontSize: Float, onAllSurahs: () -> Unit, onOpen: (Surah) -> Unit) {
+private fun HomeScreen(fontSize: Float, onAllSurahs: () -> Unit, lastReadSurah: Surah?, onContinueReading: (Surah) -> Unit, onOpen: (Surah) -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
             Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -248,6 +265,17 @@ private fun HomeScreen(fontSize: Float, onAllSurahs: () -> Unit, onOpen: (Surah)
                 Text("আসসালামু আলাইকুম", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                 Text("আপনার কুরআন পাঠ শুরু করুন। সূরা তালিকা থেকে যেকোনো সূরা বেছে নিন।")
                 Button(onClick = onAllSurahs, Modifier.fillMaxWidth()) { Text("সব ১১৪টি সূরা দেখুন") }
+            }
+        }
+        if (lastReadSurah != null) {
+            Card(Modifier.fillMaxWidth()) {
+                Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(Modifier.weight(1f)) {
+                        Text("শেষ যেখানে পড়েছেন", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text("${lastReadSurah.bangla} • ${lastReadSurah.english}")
+                    }
+                    Button(onClick = { onContinueReading(lastReadSurah) }) { Text("চালিয়ে যান") }
+                }
             }
         }
         Text("দ্রুত শুরু", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
