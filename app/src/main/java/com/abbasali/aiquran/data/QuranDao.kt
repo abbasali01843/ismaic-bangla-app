@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -37,4 +38,13 @@ interface QuranDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTranslations(translations: List<TranslationEntity>)
+
+    @Transaction
+    suspend fun importContent(
+        verses: List<QuranVerseEntity>,
+        translations: List<TranslationEntity>
+    ) {
+        if (verses.isNotEmpty()) insertVerses(verses)
+        if (translations.isNotEmpty()) insertTranslations(translations)
+    }
 }
