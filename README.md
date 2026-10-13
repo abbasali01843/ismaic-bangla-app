@@ -19,7 +19,7 @@ This repository starts with the Android app shell and cloud APK build workflow. 
 
 1. Open this repository in GitHub.
 2. Go to **Actions** and enable workflows if prompted.
-3. Select **Android Debug APK** → **Run workflow**.
+3. Select **Android Debug APK (Milestone build)** → **Run workflow**.
 4. Open the completed run and download the **ai-quran-debug-apk** artifact.
 5. Extract the ZIP on your Android phone and install the APK. For sideloading, allow installs from the app you use to open the APK.
 
