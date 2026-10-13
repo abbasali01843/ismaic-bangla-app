@@ -373,7 +373,7 @@ private fun VerseCard(
         ) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "\${verse.surahNumber}:\${verse.ayahNumber}",
+                    "${verse.surahNumber}:${verse.ayahNumber}",
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
@@ -394,7 +394,7 @@ private fun VerseCard(
                 Text(translation.editionName, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
                 Text(translation.translationText, style = MaterialTheme.typography.bodyLarge)
                 Text(
-                    "উৎস: \${translation.attribution}",
+                    "উৎস: ${translation.attribution}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
