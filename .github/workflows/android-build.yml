@@ -41,14 +41,16 @@ jobs:
           java-version: "17"
 
       # GitHub-hosted Ubuntu runners already include the Android SDK.
-      # Avoid setup-android's legacy "sdkmanager tools" install, which fails
-      # because the obsolete tools package is no longer published.
+      # Avoid setup-android's legacy "sdkmanager tools" install.
       - name: Install Android SDK packages
         shell: bash
         run: |
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -maxdepth 3 -type f -name sdkmanager | sort -V | tail -n 1)"
           test -x "$SDKMANAGER"
+          # sdkmanager may close the pipe early after accepting all licenses.
+          set +o pipefail
           yes | "$SDKMANAGER" --licenses >/dev/null
+          set -o pipefail
           "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle
