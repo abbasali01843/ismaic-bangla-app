@@ -1,17 +1,14 @@
-name: Android Debug APK
+name: Android Debug APK (Milestone build)
 
 on:
+  # Build only at explicit milestones; ordinary commits must not consume runner time.
   workflow_dispatch:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
 
 permissions:
   contents: read
 
 concurrency:
-  group: android-debug-${{ github.ref }}
+  group: android-debug-milestone-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
