@@ -169,6 +169,9 @@ private fun QuranApp() {
     val bookmarks by produceState(initialValue = emptyList<BookmarkEntity>(), context) {
         QuranDatabase.getInstance(context).quranDao().observeBookmarks().collect { value = it }
     }
+    val savedAyahs by produceState(initialValue = emptyList<QuranVerseEntity>(), context) {
+        QuranDatabase.getInstance(context).quranDao().observeBookmarkedVerses().collect { value = it }
+    }
     val verses by produceState(initialValue = emptyList<QuranVerseEntity>(), openedSurah?.number, context) {
         val number = openedSurah?.number
         if (number == null) {
@@ -248,13 +251,35 @@ private fun QuranApp() {
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(7.dp)) { items(filtered, key = { it.number }) { SurahRow(it) { openSurah(it) } } }
                 }
                 Tab.BOOKMARKS -> {
-                    if (savedSurahs.isEmpty()) {
-                        EmptyFeature("আপনার বুকমার্ক", "সূরার পৃষ্ঠা খুলে বুকমার্ক বোতাম চাপুন। সংরক্ষণ এই ফোনের স্থানীয় ডেটাবেসে থাকবে।")
+                    if (savedSurahs.isEmpty() && savedAyahs.isEmpty()) {
+                        EmptyFeature("আপনার বুকমার্ক", "কোনো সূরা বা আয়াত এখনো সংরক্ষণ করা হয়নি। সূরা বা আয়াতের পাশে ☆ বোতাম চাপলে এখানে পাওয়া যাবে।")
                     } else {
-                        Column(Modifier.fillMaxSize()) {
-                            Text("সংরক্ষিত সূরা (${savedSurahs.size})", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                            LazyColumn(verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                                items(savedSurahs, key = { it.number }) { s -> SurahRow(s) { openSurah(s) } }
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            if (savedSurahs.isNotEmpty()) {
+                                item {
+                                    Text("সংরক্ষিত সূরা (${savedSurahs.size})", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                                }
+                                items(savedSurahs, key = { "surah:${it.number}" }) { s ->
+                                    SurahRow(s) { openSurah(s) }
+                                }
+                            }
+                            if (savedAyahs.isNotEmpty()) {
+                                item {
+                                    Text("সংরক্ষিত আয়াত (${savedAyahs.size})", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+                                }
+                                items(savedAyahs, key = { "ayah:${it.verseKey}" }) { verse ->
+                                    VerseCard(
+                                        verse = verse,
+                                        fontSize = fontSize,
+                                        isBookmarked = true,
+                                        onToggleBookmark = {
+                                            scope.launch { QuranDatabase.getInstance(context).quranDao().deleteBookmark(verse.verseKey) }
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -264,7 +289,7 @@ private fun QuranApp() {
                     Text("আরবি ফন্টের আকার: " + fontSize.toInt() + " sp")
                     Slider(value = fontSize, onValueChange = { fontSize = it }, valueRange = 24f..44f)
                     Text("অ্যাপের বর্তমান অবস্থা", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text("সূরা তালিকা ও অনুসন্ধান প্রস্তুত। পূর্ণ আয়াত, অনুবাদ, অফলাইন সিঙ্ক ও বুকমার্কের কাজ পরবর্তী ধাপে হবে।")
+                    Text("প্রস্তুত: ১১৪টি সূরার তালিকা ও অনুসন্ধান, স্থানীয় সূরা/আয়াত বুকমার্ক, শেষ পড়া সূরা মনে রাখা এবং Room-ভিত্তিক আয়াত/অনুবাদ প্রদর্শন। পূর্ণ কুরআনের যাচাইকৃত আরবি পাঠ ও বাংলা অনুবাদের ডেটাসেট এখনো যুক্ত হয়নি।")
                 }
             }
         }
