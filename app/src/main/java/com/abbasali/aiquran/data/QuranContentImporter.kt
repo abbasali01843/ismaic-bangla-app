@@ -31,6 +31,10 @@ class QuranContentImporter(private val context: Context) {
         require(source.isNotEmpty()) { "Content bundle must declare its source." }
         require(version.isNotEmpty()) { "Content bundle must declare contentVersion." }
 
+        val preferenceKey = "$source:$version"
+        val preferences = context.getSharedPreferences("quran_content_import", Context.MODE_PRIVATE)
+        if (preferences.getString("imported_bundle", null) == preferenceKey) return null
+
         val versesJson = root.optJSONArray("verses")
             ?: throw IllegalArgumentException("Content bundle is missing the verses array.")
         val translationsJson = root.optJSONArray("translations")
@@ -91,6 +95,7 @@ class QuranContentImporter(private val context: Context) {
 
         require(verses.isNotEmpty() || translations.isNotEmpty()) { "Content bundle is empty." }
         QuranDatabase.getInstance(context).quranDao().importContent(verses, translations)
+        preferences.edit().putString("imported_bundle", preferenceKey).apply()
         return Result(verses.size, translations.size, source, version)
     }
 
