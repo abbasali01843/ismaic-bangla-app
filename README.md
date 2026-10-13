@@ -52,6 +52,9 @@ See [Quran Foundation Developer Terms](https://api-docs.quran.com/legal/develope
 - [x] Room schema for Quran verses, translations and bookmarks
 - [x] Local surah/ayah bookmarks and last-opened-surah memory
 - [x] Reader UI wired to locally stored verses and translation records
+- [x] Versioned JSON bundle importer with validation and transactional Room writes
+- [x] Startup import status shown in Settings
+- [x] Offline content bundle schema and release checklist documented
 - [ ] Select and document a verified Quran text and Bengali translation source
 - [ ] Add a safe, repeatable content import/sync pipeline
 - [ ] Populate and verify the complete offline Quran + selected translation
