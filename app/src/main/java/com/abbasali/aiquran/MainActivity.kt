@@ -11,6 +11,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.produceState
+import kotlinx.coroutines.launch
+import com.abbasali.aiquran.data.BookmarkEntity
+import com.abbasali.aiquran.data.QuranDatabase
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -158,6 +163,31 @@ private fun QuranApp() {
     var openedSurah by remember { mutableStateOf<Surah?>(null) }
     var query by remember { mutableStateOf("") }
     var fontSize by remember { mutableFloatStateOf(30f) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val bookmarks by produceState(initialValue = emptyList<BookmarkEntity>(), context) {
+        QuranDatabase.getInstance(context).quranDao().observeBookmarks().collect { value = it }
+    }
+    val savedSurahs = remember(bookmarks) {
+        surahs.filter { s -> bookmarks.any { it.verseKey == "surah:${s.number}" } }
+    }
+    fun toggleSurahBookmark(surah: Surah) {
+        scope.launch {
+            val dao = QuranDatabase.getInstance(context).quranDao()
+            val key = "surah:${surah.number}"
+            if (bookmarks.any { it.verseKey == key }) {
+                dao.deleteBookmark(key)
+            } else {
+                dao.upsertBookmark(
+                    BookmarkEntity(
+                        verseKey = key,
+                        createdAtEpochMillis = System.currentTimeMillis(),
+                        note = "saved-surah"
+                    )
+                )
+            }
+        }
+    }
     Scaffold(bottomBar = {
         NavigationBar {
             NavigationBarItem(tab == Tab.HOME, { tab = Tab.HOME; openedSurah = null }, icon = { Text("⌂") }, label = { Text("হোম") })
@@ -176,7 +206,7 @@ private fun QuranApp() {
             }
             Spacer(Modifier.height(10.dp))
             if (openedSurah != null) {
-                SurahDetails(openedSurah!!, fontSize) { openedSurah = null }
+                SurahDetails(openedSurah!!, fontSize, bookmarks.any { it.verseKey == "surah:${openedSurah!!.number}" }, { toggleSurahBookmark(openedSurah!!) }) { openedSurah = null }
             } else when (tab) {
                 Tab.HOME -> HomeScreen(fontSize, { tab = Tab.SURAHS }, { openedSurah = it })
                 Tab.SURAHS -> {
@@ -185,7 +215,18 @@ private fun QuranApp() {
                     Text("মোট " + surahs.size + "টি সূরা", Modifier.padding(vertical = 8.dp), style = MaterialTheme.typography.titleMedium)
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(7.dp)) { items(filtered, key = { it.number }) { SurahRow(it) { openedSurah = it } } }
                 }
-                Tab.BOOKMARKS -> EmptyFeature("আপনার বুকমার্ক", "বুকমার্ক ফিচারটি পরের ধাপে Room ডেটাবেসে যুক্ত হবে। তখন ইন্টারনেট ছাড়াও সংরক্ষিত আয়াত পাওয়া যাবে।")
+                Tab.BOOKMARKS -> {
+                    if (savedSurahs.isEmpty()) {
+                        EmptyFeature("আপনার বুকমার্ক", "সূরার পৃষ্ঠা খুলে বুকমার্ক বোতাম চাপুন। সংরক্ষণ এই ফোনের স্থানীয় ডেটাবেসে থাকবে।")
+                    } else {
+                        Column(Modifier.fillMaxSize()) {
+                            Text("সংরক্ষিত সূরা (${savedSurahs.size})", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                            LazyColumn(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                                items(savedSurahs, key = { it.number }) { s -> SurahRow(s) { openedSurah = s } }
+                            }
+                        }
+                    }
+                }
                 Tab.SETTINGS -> Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("পাঠের সেটিংস", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Text("আরবি ফন্টের আকার: " + fontSize.toInt() + " sp")
@@ -231,7 +272,7 @@ private fun SurahRow(surah: Surah, onClick: () -> Unit) {
 }
 
 @Composable
-private fun SurahDetails(surah: Surah, fontSize: Float, onBack: () -> Unit) {
+private fun SurahDetails(surah: Surah, fontSize: Float, isBookmarked: Boolean, onToggleBookmark: () -> Unit, onBack: () -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         TextButton(onClick = onBack) { Text("← সূরা তালিকায় ফিরে যান") }
         Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
@@ -242,6 +283,7 @@ private fun SurahDetails(surah: Surah, fontSize: Float, onBack: () -> Unit) {
                 Text(surah.number.toString() + " নম্বর সূরা • " + surah.ayahs + " আয়াত • " + surah.place)
             }
         }
+        Button(onClick = onToggleBookmark, modifier = Modifier.fillMaxWidth()) { Text(if (isBookmarked) "★ বুকমার্ক থেকে সরান" else "☆ সূরা বুকমার্ক করুন") }
         Text("আয়াতের পাঠ", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Text("এই সূরার পূর্ণ আরবি আয়াত ও বাংলা অনুবাদ পরবর্তী ডেটা-সিঙ্ক ধাপে যুক্ত হবে। ভুল বা অসম্পূর্ণ কুরআনের পাঠ দেখানোর পরিবর্তে এখানে স্পষ্টভাবে জানানো হচ্ছে যে ডেটা এখনো যোগ হয়নি।", style = MaterialTheme.typography.bodyLarge)
     }
