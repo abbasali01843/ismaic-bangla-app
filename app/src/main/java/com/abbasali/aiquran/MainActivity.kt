@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.produceState
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import com.abbasali.aiquran.data.BookmarkEntity
 import com.abbasali.aiquran.data.QuranVerseEntity
 import com.abbasali.aiquran.data.QuranDatabase
@@ -163,6 +164,8 @@ private fun QuranApp() {
     var tab by remember { mutableStateOf(Tab.HOME) }
     var openedSurah by remember { mutableStateOf<Surah?>(null) }
     var query by remember { mutableStateOf("") }
+    var translationSearchMode by remember { mutableStateOf(false) }
+    var translationResults by remember { mutableStateOf(emptyList<com.abbasali.aiquran.data.TranslationEntity>()) }
     var fontSize by remember { mutableFloatStateOf(30f) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -171,6 +174,15 @@ private fun QuranApp() {
     }
     val savedAyahs by produceState(initialValue = emptyList<QuranVerseEntity>(), context) {
         QuranDatabase.getInstance(context).quranDao().observeBookmarkedVerses().collect { value = it }
+    }
+    LaunchedEffect(query, translationSearchMode) {
+        if (!translationSearchMode || query.trim().length < 2) {
+            translationResults = emptyList()
+        } else {
+            delay(300)
+            translationResults = QuranDatabase.getInstance(context).quranDao()
+                .searchTranslations(query.trim(), "bn")
+        }
     }
     val verses by produceState(initialValue = emptyList<QuranVerseEntity>(), openedSurah?.number, context) {
         val number = openedSurah?.number
@@ -245,10 +257,72 @@ private fun QuranApp() {
             } else when (tab) {
                 Tab.HOME -> HomeScreen(fontSize, { tab = Tab.SURAHS }, lastReadSurah, { openSurah(it) }, { openSurah(it) })
                 Tab.SURAHS -> {
-                    OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth(), label = { Text("সূরা খুঁজুন") }, placeholder = { Text("বাংলা/ইংরেজি নাম বা নম্বর") }, singleLine = true)
-                    val filtered = surahs.filter { it.bangla.contains(query, true) || it.english.contains(query, true) || it.number.toString() == query.trim() }
-                    Text("মোট " + surahs.size + "টি সূরা", Modifier.padding(vertical = 8.dp), style = MaterialTheme.typography.titleMedium)
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(7.dp)) { items(filtered, key = { it.number }) { SurahRow(it) { openSurah(it) } } }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(
+                            selected = !translationSearchMode,
+                            onClick = { translationSearchMode = false; query = "" },
+                            label = { Text("সূরা") }
+                        )
+                        FilterChip(
+                            selected = translationSearchMode,
+                            onClick = { translationSearchMode = true; query = "" },
+                            label = { Text("বাংলা অনুবাদ") }
+                        )
+                    }
+                    OutlinedTextField(
+                        value = query,
+                        onValueChange = { query = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(if (translationSearchMode) "অনুবাদে খুঁজুন" else "সূরা খুঁজুন") },
+                        placeholder = { Text(if (translationSearchMode) "কমপক্ষে ২টি অক্ষর লিখুন" else "বাংলা/ইংরেজি নাম বা নম্বর") },
+                        singleLine = true
+                    )
+                    if (!translationSearchMode) {
+                        val filtered = surahs.filter {
+                            it.bangla.contains(query, true) ||
+                                it.english.contains(query, true) ||
+                                it.number.toString() == query.trim()
+                        }
+                        Text("মোট ${filtered.size}টি সূরা", Modifier.padding(vertical = 8.dp), style = MaterialTheme.typography.titleMedium)
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                            items(filtered, key = { it.number }) { SurahRow(it) { openSurah(it) } }
+                        }
+                    } else {
+                        Text(
+                            if (query.trim().length < 2) "অনুবাদের শব্দ লিখে খুঁজুন।" else "ফলাফল: ${translationResults.size}",
+                            Modifier.padding(vertical = 8.dp),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        if (query.trim().length >= 2 && translationResults.isEmpty()) {
+                            Card(Modifier.fillMaxWidth()) {
+                                Text(
+                                    "কোনো ফলাফল পাওয়া যায়নি। বাংলা অনুবাদের ডেটা যুক্ত আছে কি না যাচাই করুন, অথবা অন্য শব্দ দিয়ে চেষ্টা করুন।",
+                                    Modifier.padding(16.dp)
+                                )
+                            }
+                        } else {
+                            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                items(translationResults, key = { it.id }) { translation ->
+                                    val surahNumber = translation.verseKey.substringBefore(":").toIntOrNull()
+                                    Card(
+                                        Modifier.fillMaxWidth().clickable {
+                                            surahNumber?.let { n -> surahs.firstOrNull { it.number == n }?.let { openSurah(it) } }
+                                        }
+                                    ) {
+                                        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                            Text(
+                                                "${translation.verseKey} • ${translation.editionName}",
+                                                style = MaterialTheme.typography.labelMedium,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                            Text(translation.translationText, style = MaterialTheme.typography.bodyLarge)
+                                            Text("উৎস: ${translation.attribution}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 Tab.BOOKMARKS -> {
                     if (savedSurahs.isEmpty() && savedAyahs.isEmpty()) {
