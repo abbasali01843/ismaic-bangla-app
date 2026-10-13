@@ -40,8 +40,16 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      # GitHub-hosted Ubuntu runners already include the Android SDK.
+      # Avoid setup-android's legacy "sdkmanager tools" install, which fails
+      # because the obsolete tools package is no longer published.
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -maxdepth 3 -type f -name sdkmanager | sort -V | tail -n 1)"
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -52,7 +60,7 @@ jobs:
         run: |
           java -version
           gradle --version
-          sdkmanager --list_installed
+          echo "ANDROID_HOME=$ANDROID_HOME"
 
       - name: Build debug APK
         run: gradle :app:assembleDebug --no-daemon
