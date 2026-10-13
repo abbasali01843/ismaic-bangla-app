@@ -47,11 +47,15 @@ See [Quran Foundation Developer Terms](https://api-docs.quran.com/legal/develope
 ## Project status
 
 - [x] Native Android project skeleton
-- [x] Phone-triggered GitHub Actions debug build
-- [ ] Licensed Quran data source selected and documented
-- [ ] Content Sync/backend configured
-- [ ] Complete offline Quran + selected translations
-- [ ] Reader, bookmarks and search backed by Room
+- [x] Manual GitHub Actions debug APK build (milestone-based; normal commits do not build)
+- [x] 114-surah directory and name/number search
+- [x] Room schema for Quran verses, translations and bookmarks
+- [x] Local surah/ayah bookmarks and last-opened-surah memory
+- [x] Reader UI wired to locally stored verses and translation records
+- [ ] Select and document a verified Quran text and Bengali translation source
+- [ ] Add a safe, repeatable content import/sync pipeline
+- [ ] Populate and verify the complete offline Quran + selected translation
+- [ ] Search across locally stored translation text
 - [ ] Android 11 device testing
 - [ ] AI assistant (later milestone)
 
