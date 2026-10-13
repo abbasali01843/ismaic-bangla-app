@@ -23,6 +23,9 @@ interface QuranDao {
     @Query("SELECT * FROM bookmarks ORDER BY createdAtEpochMillis DESC")
     fun observeBookmarks(): Flow<List<BookmarkEntity>>
 
+    @Query("SELECT quran_verses.* FROM quran_verses INNER JOIN bookmarks ON quran_verses.verseKey = bookmarks.verseKey WHERE bookmarks.note = 'saved-ayah' ORDER BY bookmarks.createdAtEpochMillis DESC")
+    fun observeBookmarkedVerses(): Flow<List<QuranVerseEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertBookmark(bookmark: BookmarkEntity)
 
