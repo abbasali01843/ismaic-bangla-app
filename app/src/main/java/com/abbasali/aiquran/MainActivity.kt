@@ -15,6 +15,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.produceState
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.abbasali.aiquran.data.BookmarkEntity
 import com.abbasali.aiquran.data.QuranVerseEntity
 import com.abbasali.aiquran.data.QuranDatabase
@@ -166,6 +168,7 @@ private fun QuranApp() {
     var query by remember { mutableStateOf("") }
     var translationSearchMode by remember { mutableStateOf(false) }
     var translationResults by remember { mutableStateOf(emptyList<com.abbasali.aiquran.data.TranslationEntity>()) }
+    var contentImportStatus by remember { mutableStateOf("কনটেন্ট পরীক্ষা চলছে…") }
     var fontSize by remember { mutableFloatStateOf(30f) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -174,6 +177,20 @@ private fun QuranApp() {
     }
     val savedAyahs by produceState(initialValue = emptyList<QuranVerseEntity>(), context) {
         QuranDatabase.getInstance(context).quranDao().observeBookmarkedVerses().collect { value = it }
+    }
+    LaunchedEffect(context) {
+        contentImportStatus = try {
+            val result = withContext(Dispatchers.IO) {
+                com.abbasali.aiquran.data.QuranContentImporter(context).importBundledContent()
+            }
+            if (result == null) {
+                "নতুন কনটেন্ট bundle পাওয়া যায়নি; পূর্ণ কুরআনের ডেটা এখনো যুক্ত হয়নি।"
+            } else {
+                "${result.versesImported} আয়াত ও ${result.translationsImported} অনুবাদ import হয়েছে • ${result.source} • ${result.version}"
+            }
+        } catch (error: Exception) {
+            "কনটেন্ট import ব্যর্থ: ${error.message ?: "অজানা ত্রুটি"}"
+        }
     }
     LaunchedEffect(query, translationSearchMode) {
         if (!translationSearchMode || query.trim().length < 2) {
@@ -363,7 +380,7 @@ private fun QuranApp() {
                     Text("আরবি ফন্টের আকার: " + fontSize.toInt() + " sp")
                     Slider(value = fontSize, onValueChange = { fontSize = it }, valueRange = 24f..44f)
                     Text("অ্যাপের বর্তমান অবস্থা", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text("প্রস্তুত: ১১৪টি সূরার তালিকা ও অনুসন্ধান, স্থানীয় সূরা/আয়াত বুকমার্ক, শেষ পড়া সূরা মনে রাখা এবং Room-ভিত্তিক আয়াত/অনুবাদ প্রদর্শন। পূর্ণ কুরআনের যাচাইকৃত আরবি পাঠ ও বাংলা অনুবাদের ডেটাসেট এখনো যুক্ত হয়নি।")
+                    Text("প্রস্তুত: ১১৪টি সূরার তালিকা, বাংলা অনুবাদ অনুসন্ধান, স্থানীয় বুকমার্ক, শেষ পড়া সূরা মনে রাখা এবং Room-ভিত্তিক পাঠক।")\n                    Text("কনটেন্ট অবস্থা", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)\n                    Text(contentImportStatus, color = MaterialTheme.colorScheme.onSurfaceVariant)\n                    Text("ডেটা ফাইল: app/src/main/assets/quran-content.json", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
